@@ -1,7 +1,9 @@
 # Tronnlix Trade roadmap
 - [x] Enable Cloud accounts and secure data foundations.
-- [ ] Build public website and authentication.
-- [ ] Build customer workspace for profile, verification, funding requests, copy allocations, and support.
-- [ ] Build staff review workspace and role separation.
-- [ ] Verify preview and security signals.
+- [x] Build public website and authentication.
+- [x] Build customer workspace for profile, verification requests, funding requests, copy allocations, and support.
+- [x] Build staff review workspace and role separation (basic operations only).
+- [x] Verify page responses and preview compilation.
+- [ ] Provision the single Super Admin account through a trusted database-only operation; no dashboard can promote it.
+- [ ] Complete production-readiness: verified KYC, payment confirmation, execution, real performance, role administration, CMS, settings, theme builder, mail, reports, security controls and infrastructure testing.
 - [ ] Pending external integrations: real blockchain wallet monitoring, market execution/pricing, KYC provider, email delivery, and live chat require provider configuration and compliance review.
