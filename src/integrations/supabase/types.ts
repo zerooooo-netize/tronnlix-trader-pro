@@ -109,6 +109,51 @@ export type Database = {
           },
         ]
       }
+      crypto_wallets: {
+        Row: {
+          active: boolean
+          address: string
+          asset: string
+          created_at: string
+          deleted_at: string | null
+          deposit_fee: number
+          id: string
+          max_deposit: number
+          min_deposit: number
+          network: string
+          updated_at: string
+          withdrawal_fee: number
+        }
+        Insert: {
+          active?: boolean
+          address: string
+          asset: string
+          created_at?: string
+          deleted_at?: string | null
+          deposit_fee?: number
+          id?: string
+          max_deposit?: number
+          min_deposit?: number
+          network: string
+          updated_at?: string
+          withdrawal_fee?: number
+        }
+        Update: {
+          active?: boolean
+          address?: string
+          asset?: string
+          created_at?: string
+          deleted_at?: string | null
+          deposit_fee?: number
+          id?: string
+          max_deposit?: number
+          min_deposit?: number
+          network?: string
+          updated_at?: string
+          withdrawal_fee?: number
+        }
+        Relationships: []
+      }
       deposits: {
         Row: {
           amount: number
@@ -121,6 +166,8 @@ export type Database = {
           tx_reference: string | null
           updated_at: string
           user_id: string
+          wallet_address: string | null
+          wallet_id: string | null
         }
         Insert: {
           amount: number
@@ -133,6 +180,8 @@ export type Database = {
           tx_reference?: string | null
           updated_at?: string
           user_id: string
+          wallet_address?: string | null
+          wallet_id?: string | null
         }
         Update: {
           amount?: number
@@ -145,8 +194,18 @@ export type Database = {
           tx_reference?: string | null
           updated_at?: string
           user_id?: string
+          wallet_address?: string | null
+          wallet_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "deposits_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "crypto_wallets"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notifications: {
         Row: {
