@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
 import { Button } from '@/components/ui/button';
@@ -37,13 +37,19 @@ const NETWORKS: Record<string, string[]> = {
   MATIC: ['Polygon', 'ERC20'],
 };
 
+function friendlyError(err: { code?: string; message: string }, asset: string, network: string) {
+  if (err.code === '23505') return `A wallet for ${asset} on ${network} already exists.`;
+  if (err.code === '23514') return `That ${asset}/${network} combination isn't allowed by the database.`;
+  return err.message;
+}
+
 export function CryptoWalletAdmin() {
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
 
-  const [asset, setAsset] = useState('USDT');
+  const [asset, setAsset] = useState<string>('USDT');
   const [network, setNetwork] = useState('TRC20');
   const [address, setAddress] = useState('');
   const [min, setMin] = useState('1');
@@ -64,7 +70,7 @@ export function CryptoWalletAdmin() {
     load();
   }, []);
 
-  // Keep the network valid whenever the asset changes
+  // Keep the network valid when the asset changes
   useEffect(() => {
     const options = NETWORKS[asset] ?? [];
     if (options.length && !options.includes(network)) {
@@ -73,14 +79,30 @@ export function CryptoWalletAdmin() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [asset]);
 
+  // Set of "ASSET|NETWORK" pairs already in the DB
+  const takenPairs = useMemo(
+    () => new Set(wallets.map((w) => `${w.asset}|${w.network}`)),
+    [wallets]
+  );
+
+  const networkOptions = NETWORKS[asset] ?? [];
+  const isDuplicate = takenPairs.has(`${asset}|${network}`);
+
   async function save(e: FormEvent) {
     e.preventDefault();
     setBusy(true);
     setError('');
     setNotice('');
+
+    if (isDuplicate) {
+      setError(`A wallet for ${asset} on ${network} already exists.`);
+      setBusy(false);
+      return;
+    }
+
     const { error } = await supabase.from('crypto_wallets').insert({
       asset,
-      network,
+      network: network.trim(),
       address: address.trim(),
       min_deposit: Number(min),
       max_deposit: Number(max),
@@ -88,11 +110,11 @@ export function CryptoWalletAdmin() {
       withdrawal_fee: Number(withdrawalFee),
       active: false,
     });
-    if (error) setError(error.message);
-    else {
-      setNotice(
-        'Wallet saved as inactive. Verify the address before activating it.'
-      );
+
+    if (error) {
+      setError(friendlyError(error, asset, network));
+    } else {
+      setNotice('Wallet saved as inactive. Verify the address before activating it.');
       setAddress('');
       await load();
     }
@@ -118,8 +140,6 @@ export function CryptoWalletAdmin() {
     }
     setBusy(false);
   }
-
-  const networkOptions = NETWORKS[asset] ?? [];
 
   return (
     <>
@@ -174,6 +194,13 @@ export function CryptoWalletAdmin() {
                 ))}
               </datalist>
             </label>
+
+            {isDuplicate && (
+              <p className="text-xs text-amber-600">
+                {asset} on {network} is already configured. Choose a different network
+                or edit the existing row.
+              </p>
+            )}
 
             <label className="field-label">
               Receiving address
@@ -238,8 +265,12 @@ export function CryptoWalletAdmin() {
               </label>
             </div>
 
-            <Button type="submit" disabled={busy} className="mt-2">
-              Save inactive wallet
+            <Button
+              type="submit"
+              disabled={busy || isDuplicate}
+              className="mt-2"
+            >
+              {isDuplicate ? 'Already configured' : 'Save inactive wallet'}
             </Button>
           </div>
         </form>
