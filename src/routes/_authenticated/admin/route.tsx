@@ -1,0 +1,2 @@
+import { createFileRoute,Outlet,redirect } from '@tanstack/react-router';import { supabase } from '@/integrations/supabase/client';
+export const Route=createFileRoute('/_authenticated/admin')({beforeLoad:async({context})=>{const {data,error}=await supabase.rpc('is_staff',{_user_id:context.user.id});if(error||!data)throw redirect({to:'/dashboard'});const {data:superAdmin}=await supabase.rpc('has_role',{_user_id:context.user.id,_role:'super_admin'});return {superAdmin:!!superAdmin}},component:()=> <Outlet/>});
