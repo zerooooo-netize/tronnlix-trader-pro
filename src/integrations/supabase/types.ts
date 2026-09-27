@@ -383,6 +383,10 @@ export type Database = {
         Args: { _id: string; _status: string }
         Returns: undefined
       }
+      review_kyc: {
+        Args: { _status: string; _user_id: string }
+        Returns: undefined
+      }
       review_withdrawal: {
         Args: { _id: string; _status: string }
         Returns: undefined
@@ -391,6 +395,7 @@ export type Database = {
         Args: { _id: string; _status: string }
         Returns: undefined
       }
+      submit_kyc: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "super_admin" | "admin" | "user"
