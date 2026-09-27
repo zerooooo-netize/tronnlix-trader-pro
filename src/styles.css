@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
@@ -144,7 +145,6 @@
 }
 
 /* Tronnlix visual language */
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
 :root{--background:oklch(.985 .005 95);--foreground:oklch(.19 .022 250);--card:oklch(1 0 0);--primary:oklch(.38 .15 175);--primary-foreground:oklch(.99 0 0);--secondary:oklch(.95 .01 130);--muted-foreground:oklch(.51 .025 250);--border:oklch(.88 .014 250);--hero-foreground:#f4f7ef;--hero-muted:#c7d6d1;--hero-accent:#bce6b4;--hero-line:#ffffff38;--market-foreground:#eff8f1;--market-muted:#a4c4b7;--market-line:#ffffff2e;--market-positive:#bcdfbe}
 body{font-family:'DM Sans',sans-serif;-webkit-font-smoothing:antialiased}
 .font-display{font-family:Manrope,'DM Sans',sans-serif;letter-spacing:-.045em}
