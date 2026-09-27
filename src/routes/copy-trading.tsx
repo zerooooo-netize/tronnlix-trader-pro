@@ -254,9 +254,7 @@ function CopyPage() {
             </div>
 
             <p className="mt-6 text-xs leading-6 text-muted-foreground">
-              Sample profiles and hypothetical performance figures are shown for
-              illustration. They are not verified trader returns. Copy trading
-              carries risk, including loss of capital. Past performance does not
+             Copy trading carries risk, including loss of capital. Past performance does not
               predict future results.
             </p>
           </div>
