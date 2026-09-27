@@ -1,4 +1,4 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
   Outlet,
   Link,
@@ -6,28 +6,38 @@ import {
   useRouter,
   HeadContent,
   Scripts,
-} from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+} from '@tanstack/react-router';
+import { useEffect, type ReactNode } from 'react';
+import { AlertTriangle, Compass } from 'lucide-react';
 
-import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
+import appCss from '../styles.css?url';
+import { reportLovableError } from '../lib/lovable-error-reporting';
+import { Button } from '@/components/ui/button';
 
 function NotFoundComponent() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
+    <div className="flex min-h-dvh items-center justify-center bg-background px-5">
+      <div className="w-full max-w-md text-center">
+        <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl border border-border/70 bg-card/60 text-primary">
+          <Compass className="h-6 w-6" />
+        </span>
+        <p className="mt-6 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          Error 404
         </p>
-        <div className="mt-6">
-          <Link
-            to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Go home
-          </Link>
+        <h1 className="mt-3 font-display text-3xl font-medium tracking-tight text-foreground">
+          That page doesn't exist.
+        </h1>
+        <p className="mt-3 text-sm leading-7 text-muted-foreground">
+          The link may be old, or the page may have moved. Nothing was charged and
+          your account is unaffected.
+        </p>
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
+          <Button asChild className="h-10 rounded-full px-5">
+            <Link to="/">Back to home</Link>
+          </Button>
+          <Button asChild variant="outline" className="h-10 rounded-full px-5">
+            <Link to="/contact">Contact support</Link>
+          </Button>
         </div>
       </div>
     </div>
@@ -35,37 +45,48 @@ function NotFoundComponent() {
 }
 
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
-  console.error(error);
   const router = useRouter();
+
   useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
+    if (import.meta.env.DEV) console.error(error);
+    reportLovableError(error, { boundary: 'tanstack_root_error_component' });
   }, [error]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
+    <div className="flex min-h-dvh items-center justify-center bg-background px-5">
+      <div className="w-full max-w-md text-center">
+        <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl border border-border/70 bg-rose-500/10 text-rose-500">
+          <AlertTriangle className="h-6 w-6" />
+        </span>
+        <p className="mt-6 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          Something went wrong
         </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
-          <button
-            onClick={() => {
-              router.invalidate();
+        <h1 className="mt-3 font-display text-3xl font-medium tracking-tight text-foreground">
+          This page didn't load.
+        </h1>
+        <p className="mt-3 text-sm leading-7 text-muted-foreground">
+          It's on us. Try again, or head back and pick up where you left off.
+        </p>
+
+        {import.meta.env.DEV && (
+          <pre className="mt-6 max-h-40 overflow-auto rounded-lg border border-border/60 bg-muted/40 p-3 text-left text-[11px] leading-5 text-muted-foreground">
+            {error.message}
+          </pre>
+        )}
+
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
+          <Button
+            className="h-10 rounded-full px-5"
+            onClick={async () => {
+              await router.invalidate();
               reset();
             }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
             Try again
-          </button>
-          <a
-            href="/"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
-          >
-            Go home
-          </a>
+          </Button>
+          <Button asChild variant="outline" className="h-10 rounded-full px-5">
+            <Link to="/">Back to home</Link>
+          </Button>
         </div>
       </div>
     </div>
@@ -75,25 +96,37 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
     meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Tronnlix Trade" },
-      { name: "description", content: "A considered approach to global markets and copy trading." },
-      { name: "author", content: "Tronnlix Trade" },
-      { property: "og:title", content: "Tronnlix Trade" },
-      { property: "og:description", content: "A considered approach to global markets and copy trading." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
+      { charSet: 'utf-8' },
+      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+      { name: 'theme-color', content: '#0b0f1a' },
+      { name: 'color-scheme', content: 'light dark' },
+      { title: 'Tronnlix Trade' },
+      {
+        name: 'description',
+        content: 'A considered approach to global markets and copy trading.',
+      },
+      { name: 'author', content: 'Tronnlix Trade' },
+      { property: 'og:title', content: 'Tronnlix Trade' },
+      {
+        property: 'og:description',
+        content: 'A considered approach to global markets and copy trading.',
+      },
+      { property: 'og:type', content: 'website' },
+      { name: 'twitter:card', content: 'summary_large_image' },
     ],
     links: [
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" },
+      { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
       {
-        rel: "stylesheet",
-        href: appCss,
+        rel: 'preconnect',
+        href: 'https://fonts.gstatic.com',
+        crossOrigin: 'anonymous',
       },
-      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+      {
+        rel: 'stylesheet',
+        href: 'https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap',
+      },
+      { rel: 'stylesheet', href: appCss },
+      { rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' },
     ],
   }),
   shellComponent: RootShell,
@@ -104,11 +137,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className="antialiased">
       <head>
         <HeadContent />
       </head>
-      <body>
+      <body className="min-h-dvh bg-background text-foreground">
         {children}
         <Scripts />
       </body>
