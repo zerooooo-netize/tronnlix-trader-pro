@@ -14,16 +14,386 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      activity_logs: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json
+          id: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json
+          id?: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      audit_logs: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          details: Json
+          entity_id: string | null
+          entity_type: string
+          id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          details?: Json
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          details?: Json
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      copy_allocations: {
+        Row: {
+          amount: number
+          created_at: string
+          deleted_at: string | null
+          id: string
+          status: string
+          trader_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          status?: string
+          trader_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          status?: string
+          trader_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "copy_allocations_trader_id_fkey"
+            columns: ["trader_id"]
+            isOneToOne: false
+            referencedRelation: "traders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      deposits: {
+        Row: {
+          amount: number
+          asset: string
+          created_at: string
+          deleted_at: string | null
+          id: string
+          network: string
+          status: string
+          tx_reference: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          asset: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          network: string
+          status?: string
+          tx_reference?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          asset?: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          network?: string
+          status?: string
+          tx_reference?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          id: string
+          message: string
+          read_at: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          message: string
+          read_at?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          message?: string
+          read_at?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          balance: number
+          country: string
+          created_at: string
+          deleted_at: string | null
+          full_name: string
+          id: string
+          kyc_status: string
+          phone: string
+          updated_at: string
+        }
+        Insert: {
+          balance?: number
+          country?: string
+          created_at?: string
+          deleted_at?: string | null
+          full_name?: string
+          id: string
+          kyc_status?: string
+          phone?: string
+          updated_at?: string
+        }
+        Update: {
+          balance?: number
+          country?: string
+          created_at?: string
+          deleted_at?: string | null
+          full_name?: string
+          id?: string
+          kyc_status?: string
+          phone?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      support_tickets: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          id: string
+          message: string
+          reply: string | null
+          status: string
+          subject: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          message: string
+          reply?: string | null
+          status?: string
+          subject: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          message?: string
+          reply?: string | null
+          status?: string
+          subject?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      traders: {
+        Row: {
+          aum: number
+          created_at: string
+          deleted_at: string | null
+          featured: boolean
+          followers: number
+          handle: string
+          id: string
+          name: string
+          risk_level: string
+          roi_12m: number
+          strategy: string
+          updated_at: string
+        }
+        Insert: {
+          aum?: number
+          created_at?: string
+          deleted_at?: string | null
+          featured?: boolean
+          followers?: number
+          handle: string
+          id?: string
+          name: string
+          risk_level: string
+          roi_12m?: number
+          strategy: string
+          updated_at?: string
+        }
+        Update: {
+          aum?: number
+          created_at?: string
+          deleted_at?: string | null
+          featured?: boolean
+          followers?: number
+          handle?: string
+          id?: string
+          name?: string
+          risk_level?: string
+          roi_12m?: number
+          strategy?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      withdrawals: {
+        Row: {
+          amount: number
+          asset: string
+          created_at: string
+          deleted_at: string | null
+          destination: string
+          id: string
+          network: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          asset?: string
+          created_at?: string
+          deleted_at?: string | null
+          destination: string
+          id?: string
+          network: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          asset?: string
+          created_at?: string
+          deleted_at?: string | null
+          destination?: string
+          id?: string
+          network?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      allocate_copy: {
+        Args: { _amount: number; _trader_id: string }
+        Returns: string
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_staff: { Args: { _user_id: string }; Returns: boolean }
+      request_withdrawal: {
+        Args: { _amount: number; _destination: string; _network: string }
+        Returns: string
+      }
+      review_deposit: {
+        Args: { _id: string; _status: string }
+        Returns: undefined
+      }
+      review_withdrawal: {
+        Args: { _id: string; _status: string }
+        Returns: undefined
+      }
+      set_copy_status: {
+        Args: { _id: string; _status: string }
+        Returns: undefined
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "super_admin" | "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +520,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["super_admin", "admin", "user"],
+    },
   },
 } as const
