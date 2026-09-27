@@ -8,3 +8,7 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Keep financial state transitions in database functions with owner/staff checks because client-side balances and approvals are forgeable.
+- Keep public information pages separate from protected customer and staff workspaces because shareable content and private account data require different access rules.
+- Treat seeded trader performance as illustrative, not live returns, until a verified performance feed is connected.
