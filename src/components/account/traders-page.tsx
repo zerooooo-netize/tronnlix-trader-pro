@@ -117,7 +117,6 @@ export function TradersPage({
         <div className="relative grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
           <div className="max-w-2xl">
             <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
-              <Sparkles className="h-3.5 w-3.5" />
               Copy trading marketplace
             </div>
 
