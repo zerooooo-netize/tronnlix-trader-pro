@@ -14,7 +14,6 @@ import {
   Menu,
   Search,
   ShieldCheck,
-  Sparkles,
   Ticket,
   UserRound,
   UsersRound,
@@ -160,7 +159,7 @@ const ADMIN_NAV_BASE: NavGroup[] = [
       {
         label: 'Traders',
         to: '/admin/traders',
-        icon: Sparkles,
+        icon: ShieldCheck,
       },
       {
         label: 'Crypto settings',
@@ -222,11 +221,11 @@ export function WorkspaceShell({
   const reduceMotion = useReducedMotion();
 
   /*
-   * Load the authenticated identity and role state.
+   * Load authenticated identity and role state.
    *
-   * We deliberately keep this client-side check for UI visibility only.
-   * Actual authorization must continue to be enforced by Supabase RLS
-   * and the RPC functions themselves.
+   * These checks control UI visibility only.
+   * Actual authorization must continue to be enforced by
+   * Supabase RLS policies and secure RPC functions.
    */
   useEffect(() => {
     let mounted = true;
@@ -286,13 +285,20 @@ export function WorkspaceShell({
 
       if (accountOpen) {
         setAccountOpen(false);
-        requestAnimationFrame(() => accountButtonRef.current?.focus());
+
+        requestAnimationFrame(() => {
+          accountButtonRef.current?.focus();
+        });
+
         return;
       }
 
       if (mobileOpen) {
         setMobileOpen(false);
-        requestAnimationFrame(() => mobileMenuButtonRef.current?.focus());
+
+        requestAnimationFrame(() => {
+          mobileMenuButtonRef.current?.focus();
+        });
       }
     }
 
@@ -310,6 +316,7 @@ export function WorkspaceShell({
     if (!mobileOpen) return;
 
     const previousOverflow = document.body.style.overflow;
+
     document.body.style.overflow = 'hidden';
 
     return () => {
@@ -434,6 +441,7 @@ export function WorkspaceShell({
                 onLogout={logout}
                 onClose={() => {
                   setMobileOpen(false);
+
                   requestAnimationFrame(() =>
                     mobileMenuButtonRef.current?.focus()
                   );
@@ -499,7 +507,9 @@ export function WorkspaceShell({
               title="Search will be available soon"
             >
               <Search className="h-3.5 w-3.5" />
+
               <span>Search</span>
+
               <kbd className="ml-2 rounded border border-border/70 bg-muted/60 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
                 ⌘K
               </kbd>
@@ -623,7 +633,10 @@ export function WorkspaceShell({
                           className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-foreground/90 transition-colors hover:bg-accent disabled:pointer-events-none disabled:opacity-50"
                         >
                           <LogOut className="h-4 w-4" />
-                          {signingOut ? 'Signing out...' : 'Sign out'}
+
+                          {signingOut
+                            ? 'Signing out...'
+                            : 'Sign out'}
                         </button>
                       </div>
                     </motion.div>
@@ -711,7 +724,6 @@ function SidebarInner({
   groups,
   showAdminLink,
   email,
-  superAdmin,
   displayRole,
   onNavigate,
   onLogout,
@@ -762,24 +774,14 @@ function SidebarInner({
             className="absolute -right-8 -top-8 h-20 w-20 rounded-full bg-primary/10 blur-2xl"
           />
 
-          <div className="relative flex items-center gap-2.5">
-            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
-              {admin ? (
-                <ShieldCheck className="h-3.5 w-3.5" />
-              ) : (
-                <Sparkles className="h-3.5 w-3.5" />
-              )}
-            </span>
+          <div className="relative min-w-0">
+            <p className="text-[9.5px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              {admin ? 'Administration' : 'Client portal'}
+            </p>
 
-            <div className="min-w-0">
-              <p className="text-[9.5px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                {admin ? 'Administration' : 'Client portal'}
-              </p>
-
-              <p className="mt-0.5 truncate text-[12.5px] font-medium text-foreground">
-                Tronnlix Trade
-              </p>
-            </div>
+            <p className="mt-0.5 truncate text-[12.5px] font-medium text-foreground">
+              Tronnlix Trade
+            </p>
           </div>
         </div>
       </div>
@@ -787,7 +789,11 @@ function SidebarInner({
       {/* Navigation */}
       <nav
         className="mt-5 flex-1 overflow-y-auto px-3 pb-4"
-        aria-label={admin ? 'Administration navigation' : 'Client navigation'}
+        aria-label={
+          admin
+            ? 'Administration navigation'
+            : 'Client navigation'
+        }
       >
         {groups.map((group) => (
           <div
