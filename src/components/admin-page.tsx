@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from '@tanstack/react-router';
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowUpRight,
   BadgeCheck,
@@ -22,7 +22,6 @@ import {
   X,
   type LucideIcon,
 } from 'lucide-react';
-
 import { WorkspaceShell } from './workspace-shell';
 import { Empty, Status } from './status';
 import { Button } from '@/components/ui/button';
@@ -56,61 +55,55 @@ type AdminPageKey =
   | 'settings'
   | 'crypto';
 
-type PageMeta = {
-  title: string;
-  description: string;
-  icon: LucideIcon;
-};
-
-const PAGE_META: Record<AdminPageKey, PageMeta> = {
+const PAGE_META: Record<AdminPageKey, { title: string; blurb: string; icon: LucideIcon }> = {
   overview: {
     title: 'Overview',
-    description: 'Deposits, reviews and platform activity at a glance.',
+    blurb: 'Deposits, reviews and platform activity at a glance.',
     icon: Gauge,
   },
   users: {
     title: 'People and accounts',
-    description: 'Review registered clients, balances and verification status.',
+    blurb: 'Every registered client, their balance and verification state.',
     icon: Users,
   },
   deposits: {
     title: 'Deposit reviews',
-    description: 'Review payment requests before confirming client funds.',
+    blurb: 'Verify each payment independently before confirming it.',
     icon: Wallet,
   },
   withdrawals: {
     title: 'Withdrawal reviews',
-    description: 'Review withdrawal requests before completing external payouts.',
+    blurb: 'Process only after the external payout has been confirmed.',
     icon: CreditCard,
   },
   verification: {
     title: 'Identity reviews',
-    description: 'Review pending identity verification submissions.',
+    blurb: 'Manual review of every KYC submission.',
     icon: ShieldCheck,
   },
   traders: {
     title: 'Trading experts',
-    description: 'Review strategy profiles and reported marketplace metrics.',
+    blurb: 'Profiles, strategy summaries and reported performance.',
     icon: BadgeCheck,
   },
   support: {
     title: 'Support inbox',
-    description: 'Manage client requests, responses and resolution status.',
+    blurb: 'Client requests, replies and resolution status.',
     icon: Ticket,
   },
   audit: {
     title: 'Audit trail',
-    description: 'Review operational actions recorded by the platform.',
+    blurb: 'Every operational action recorded in order.',
     icon: ClipboardList,
   },
   settings: {
     title: 'Platform settings',
-    description: 'Super Admin controls for platform configuration.',
+    blurb: 'Theme, CMS, secrets and infrastructure controls.',
     icon: Settings2,
   },
   crypto: {
     title: 'Crypto destinations',
-    description: 'Manage receiving wallets, networks and deposit settings.',
+    blurb: 'Receiving wallets, networks and deposit limits.',
     icon: Coins,
   },
 };
@@ -122,98 +115,37 @@ export function AdminPage({ page }: { page: AdminPageKey }) {
   const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
 
-  const reduceMotion = useReducedMotion();
-
   const load = useCallback(async () => {
     setLoading(true);
-    setError('');
-
     try {
-      const [
-        profilesResult,
-        depositsResult,
-        withdrawalsResult,
-        tradersResult,
-        allocationsResult,
-        verificationResult,
-        ticketsResult,
-        auditResult,
-      ] = await Promise.all([
-        supabase
-          .from('profiles')
-          .select('*')
-          .order('created_at', { ascending: false }),
-
-        supabase
-          .from('deposits')
-          .select('*')
-          .order('created_at', { ascending: false }),
-
-        supabase
-          .from('withdrawals')
-          .select('*')
-          .order('created_at', { ascending: false }),
-
-        supabase
-          .from('traders')
-          .select('*')
-          .order('featured', { ascending: false }),
-
-        supabase
-          .from('copy_allocations')
-          .select('*'),
-
-        supabase
-          .from('profiles')
-          .select('*')
-          .eq('kyc_status', 'pending'),
-
-        supabase
-          .from('support_tickets')
-          .select('*')
-          .order('created_at', { ascending: false }),
-
+      const [p, d, w, t, a, v, s, l] = await Promise.all([
+        supabase.from('profiles').select('*').order('created_at', { ascending: false }),
+        supabase.from('deposits').select('*').order('created_at', { ascending: false }),
+        supabase.from('withdrawals').select('*').order('created_at', { ascending: false }),
+        supabase.from('traders').select('*').order('featured', { ascending: false }),
+        supabase.from('copy_allocations').select('*'),
+        supabase.from('profiles').select('*').eq('kyc_status', 'pending'),
+        supabase.from('support_tickets').select('*').order('created_at', { ascending: false }),
         supabase
           .from('audit_logs')
           .select('*')
           .order('created_at', { ascending: false })
           .limit(100),
       ]);
-
-      const results = [
-        profilesResult,
-        depositsResult,
-        withdrawalsResult,
-        tradersResult,
-        allocationsResult,
-        verificationResult,
-        ticketsResult,
-        auditResult,
-      ];
-
-      const failed = results.find((result) => result.error);
-
-      if (failed?.error) {
-        throw failed.error;
-      }
-
+      const first = [p, d, w, t, a, v, s, l].find((x) => x.error);
+      if (first?.error) throw first.error;
       setData({
-        profiles: profilesResult.data ?? [],
-        deposits: depositsResult.data ?? [],
-        withdrawals: withdrawalsResult.data ?? [],
-        traders: tradersResult.data ?? [],
-        allocations: allocationsResult.data ?? [],
-        verification: verificationResult.data ?? [],
-        tickets: ticketsResult.data ?? [],
-        audit: auditResult.data ?? [],
+        profiles: p.data ?? [],
+        deposits: d.data ?? [],
+        withdrawals: w.data ?? [],
+        traders: t.data ?? [],
+        allocations: a.data ?? [],
+        verification: v.data ?? [],
+        tickets: s.data ?? [],
+        audit: l.data ?? [],
       });
-    } catch (errorValue) {
-      setError(
-        errorValue instanceof Error
-          ? errorValue.message
-          : 'Could not load administration data.'
-      );
-      setData(null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not load data');
     } finally {
       setLoading(false);
     }
@@ -223,47 +155,23 @@ export function AdminPage({ page }: { page: AdminPageKey }) {
     load();
   }, [load]);
 
-  useEffect(() => {
-    if (!notice) return;
-
-    const timer = window.setTimeout(() => {
-      setNotice('');
-    }, 5000);
-
-    return () => window.clearTimeout(timer);
-  }, [notice]);
-
   const act = useCallback(
-    async (
-      run: () => PromiseLike<{ error: unknown }>,
-      message: string
-    ) => {
-      if (busy) return;
-
+    async (run: () => PromiseLike<{ error: unknown }>, message: string) => {
       setBusy(true);
       setError('');
       setNotice('');
-
       try {
-        const result = await run();
-
-        if (result.error) {
-          throw result.error;
-        }
-
+        const { error } = await run();
+        if (error) throw error;
         setNotice(message);
         await load();
-      } catch (errorValue) {
-        setError(
-          errorValue instanceof Error
-            ? errorValue.message
-            : 'The action could not be completed.'
-        );
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Action failed');
       } finally {
         setBusy(false);
       }
     },
-    [busy, load]
+    [load]
   );
 
   const meta = PAGE_META[page];
@@ -272,35 +180,36 @@ export function AdminPage({ page }: { page: AdminPageKey }) {
     <WorkspaceShell
       admin
       title={meta.title}
-      subtitle={meta.description}
+      subtitle="Operations / Tronnlix Trade"
+      icon={meta.icon}
+      blurb={meta.blurb}
     >
       <div className="space-y-6">
-        <AnimatePresence mode="wait">
+        <AnimatePresence>
           {error && (
             <motion.div
-              key="admin-error"
-              initial={reduceMotion ? false : { opacity: 0, y: -4 }}
+              key="err"
+              initial={{ opacity: 0, y: -4 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={reduceMotion ? undefined : { opacity: 0, y: -4 }}
+              exit={{ opacity: 0 }}
               role="alert"
-              className="flex items-start gap-3 rounded-2xl border border-destructive/20 bg-destructive/5 px-4 py-3.5 text-sm text-destructive"
+              className="form-error flex items-start gap-3"
             >
               <X className="mt-0.5 h-4 w-4 shrink-0" />
-              <span className="leading-6">{error}</span>
+              <span>{error}</span>
             </motion.div>
           )}
-
           {notice && (
             <motion.div
-              key="admin-notice"
-              initial={reduceMotion ? false : { opacity: 0, y: -4 }}
+              key="ok"
+              initial={{ opacity: 0, y: -4 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={reduceMotion ? undefined : { opacity: 0, y: -4 }}
+              exit={{ opacity: 0 }}
               role="status"
-              className="flex items-start gap-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3.5 text-sm text-foreground"
+              className="form-notice flex items-start gap-3"
             >
               <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
-              <span className="leading-6">{notice}</span>
+              <span>{notice}</span>
             </motion.div>
           )}
         </AnimatePresence>
@@ -310,69 +219,29 @@ export function AdminPage({ page }: { page: AdminPageKey }) {
         ) : !data ? (
           <Empty
             eyebrow="Data unavailable"
-            title="We could not load this workspace"
-            body="Try again. If the problem continues, review the system audit trail and Supabase logs."
+            title="We could not load this page"
+            body="Refresh the page to try again. If the problem persists, check the audit log."
             icon={FileSearch}
-            action={{
-              label: 'Reload',
-              onClick: load,
-            }}
+            action={{ label: 'Reload', onClick: load }}
           />
         ) : (
           <>
             {page === 'overview' && <OverviewPage data={data} />}
-
             {page === 'users' && <UsersPage data={data} />}
-
             {page === 'deposits' && (
-              <ReviewQueuePage
-                kind="deposits"
-                rows={data.deposits}
-                busy={busy}
-                act={act}
-              />
+              <ReviewQueuePage kind="deposits" rows={data.deposits} busy={busy} act={act} />
             )}
-
             {page === 'withdrawals' && (
-              <ReviewQueuePage
-                kind="withdrawals"
-                rows={data.withdrawals}
-                busy={busy}
-                act={act}
-              />
+              <ReviewQueuePage kind="withdrawals" rows={data.withdrawals} busy={busy} act={act} />
             )}
-
             {page === 'verification' && (
-              <VerificationPage
-                data={data}
-                busy={busy}
-                act={act}
-              />
+              <VerificationPage data={data} busy={busy} act={act} />
             )}
-
-            {page === 'traders' && (
-              <TradersPage data={data} />
-            )}
-
-            {page === 'support' && (
-              <SupportPage
-                data={data}
-                busy={busy}
-                act={act}
-              />
-            )}
-
-            {page === 'audit' && (
-              <AuditPage data={data} />
-            )}
-
-            {page === 'crypto' && (
-              <CryptoWalletAdmin />
-            )}
-
-            {page === 'settings' && (
-              <SettingsPage />
-            )}
+            {page === 'traders' && <TradersPage data={data} />}
+            {page === 'support' && <SupportPage data={data} busy={busy} act={act} />}
+            {page === 'audit' && <AuditPage data={data} />}
+            {page === 'crypto' && <CryptoWalletAdmin />}
+            {page === 'settings' && <SettingsPage />}
           </>
         )}
       </div>
@@ -381,63 +250,27 @@ export function AdminPage({ page }: { page: AdminPageKey }) {
 }
 
 /* -----------------------------------------------------------------
- * Skeleton
- * ---------------------------------------------------------------- */
+ * Skeleton per page
+ * --------------------------------------------------------------- */
 
-function AdminSkeleton({
-  page,
-}: {
-  page: AdminPageKey;
-}) {
-  if (page === 'crypto') {
-    return (
-      <div className="space-y-4">
-        <div className="h-32 animate-pulse rounded-2xl bg-secondary/60" />
-        <div className="grid gap-4 md:grid-cols-2">
-          {Array.from({ length: 4 }).map((_, index) => (
-            <div
-              key={index}
-              className="h-32 animate-pulse rounded-2xl bg-secondary/60"
-            />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
+function AdminSkeleton({ page }: { page: AdminPageKey }) {
   if (page === 'overview') {
     return (
       <div className="space-y-6">
-        <div className="h-48 animate-pulse rounded-3xl bg-secondary/60" />
-
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, index) => (
-            <div
-              key={index}
-              className="h-28 animate-pulse rounded-2xl bg-secondary/60"
-            />
-          ))}
-        </div>
-
-        <div className="grid gap-3 md:grid-cols-3">
-          {Array.from({ length: 3 }).map((_, index) => (
-            <div
-              key={index}
-              className="h-24 animate-pulse rounded-2xl bg-secondary/60"
-            />
+        <div className="h-40 animate-pulse rounded-2xl bg-secondary/60" />
+        <div className="grid gap-4 md:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-28 animate-pulse rounded-2xl bg-secondary/60" />
           ))}
         </div>
       </div>
     );
   }
-
+  if (page === 'crypto') return null;
   return (
     <div className="space-y-3">
-      {Array.from({ length: 7 }).map((_, index) => (
-        <div
-          key={index}
-          className="h-20 animate-pulse rounded-2xl bg-secondary/60"
-        />
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="h-16 animate-pulse rounded-xl bg-secondary/60" />
       ))}
     </div>
   );
@@ -445,302 +278,128 @@ function AdminSkeleton({
 
 /* -----------------------------------------------------------------
  * Overview
- * ---------------------------------------------------------------- */
+ * --------------------------------------------------------------- */
 
-function OverviewPage({
-  data,
-}: {
-  data: AdminData;
-}) {
+function OverviewPage({ data }: { data: AdminData }) {
   const confirmedTotal = data.deposits
-    .filter((row) => row.status === 'confirmed')
-    .reduce((total, row) => total + Number(row.amount || 0), 0);
-
-  const pendingDeposits = data.deposits.filter(
-    (row) => row.status === 'pending'
-  ).length;
-
-  const pendingWithdrawals = data.withdrawals.filter(
-    (row) => row.status === 'pending'
-  ).length;
-
+    .filter((x) => x.status === 'confirmed')
+    .reduce((n, x) => n + x.amount, 0);
+  const pendingDeposits = data.deposits.filter((x) => x.status === 'pending').length;
+  const pendingWithdrawals = data.withdrawals.filter((x) => x.status === 'pending').length;
   const kycToReview = data.verification.length;
 
-  const openTickets = data.tickets.filter(
-    (row) => row.status !== 'resolved'
-  ).length;
-
-  const activeAllocations = data.allocations.filter(
-    (row) => row.status === 'active'
-  ).length;
-
   const kpis = [
-    {
-      label: 'Clients',
-      value: data.profiles.length,
-      to: '/admin/users',
-    },
-    {
-      label: 'Deposits to review',
-      value: pendingDeposits,
-      to: '/admin/deposits',
-    },
-    {
-      label: 'Withdrawals to review',
-      value: pendingWithdrawals,
-      to: '/admin/withdrawals',
-    },
-    {
-      label: 'KYC to review',
-      value: kycToReview,
-      to: '/admin/verification',
-    },
+    { label: 'Clients', value: data.profiles.length, to: '/admin/users' },
+    { label: 'Deposits to review', value: pendingDeposits, to: '/admin/deposits' },
+    { label: 'Withdrawals to review', value: pendingWithdrawals, to: '/admin/withdrawals' },
+    { label: 'KYC to review', value: kycToReview, to: '/admin/verification' },
   ] as const;
 
   const queues = [
-    {
-      label: 'Deposit queue',
-      body:
-        pendingDeposits === 0
-          ? 'Nothing waiting'
-          : `${pendingDeposits} request${pendingDeposits === 1 ? '' : 's'} waiting`,
-      to: '/admin/deposits',
-    },
-    {
-      label: 'Withdrawal queue',
-      body:
-        pendingWithdrawals === 0
-          ? 'Nothing waiting'
-          : `${pendingWithdrawals} request${pendingWithdrawals === 1 ? '' : 's'} waiting`,
-      to: '/admin/withdrawals',
-    },
-    {
-      label: 'Verification queue',
-      body:
-        kycToReview === 0
-          ? 'Nothing waiting'
-          : `${kycToReview} submission${kycToReview === 1 ? '' : 's'} waiting`,
-      to: '/admin/verification',
-    },
+    { label: 'Review deposits', to: '/admin/deposits', count: pendingDeposits },
+    { label: 'Review withdrawals', to: '/admin/withdrawals', count: pendingWithdrawals },
+    { label: 'Review verification', to: '/admin/verification', count: kycToReview },
   ] as const;
 
   return (
     <div className="space-y-8">
-      {/* Primary metric */}
-      <section className="relative overflow-hidden rounded-3xl border border-border/70 bg-gradient-to-br from-secondary/60 via-background to-background p-6 sm:p-8 lg:p-10">
-        <div
-          aria-hidden="true"
-          className="absolute -right-20 -top-20 h-52 w-52 rounded-full bg-primary/10 blur-3xl"
-        />
-
-        <div className="relative">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <span className="grid h-7 w-7 place-items-center rounded-lg bg-primary/10 text-primary">
-              <Wallet className="h-3.5 w-3.5" />
-            </span>
-
-            <span className="text-[10.5px] font-semibold uppercase tracking-[0.16em]">
-              Confirmed deposits
-            </span>
-          </div>
-
-          <p className="mt-5 font-display text-4xl tabular-nums tracking-tight text-foreground sm:text-5xl">
-            {money(confirmedTotal)}
-          </p>
-
-          <p className="mt-4 max-w-xl text-sm leading-7 text-muted-foreground">
-            Cumulative deposits currently marked confirmed in the platform.
-            This figure represents client funding records and is not platform
-            revenue.
-          </p>
-
-          <div className="mt-7 flex flex-wrap gap-2">
-            <Button
-              asChild
-              size="sm"
-              className="h-9 rounded-full"
-            >
-              <Link to="/admin/deposits">
-                Open deposit queue
-                <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
-              </Link>
-            </Button>
-
-            <Button
-              asChild
-              size="sm"
-              variant="outline"
-              className="h-9 rounded-full"
-            >
-              <Link to="/admin/audit">
-                View audit trail
-              </Link>
-            </Button>
-          </div>
+      {/* Hero metric */}
+      <div className="relative overflow-hidden rounded-3xl border border-border/70 bg-gradient-to-br from-secondary/60 via-background to-background p-6 sm:p-10">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          Confirmed deposits
+        </span>
+        <p className="mt-4 font-display text-4xl tabular-nums tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+          {money(confirmedTotal)}
+        </p>
+        <p className="mt-4 max-w-md text-sm leading-7 text-muted-foreground">
+          Cumulative funding that has cleared independent verification. This is
+          client capital, not platform revenue.
+        </p>
+        <div className="mt-8 flex flex-wrap gap-2">
+          <Button asChild size="sm" className="h-9 rounded-full">
+            <Link to="/admin/deposits">
+              Open deposit queue
+              <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
+            </Link>
+          </Button>
+          <Button asChild size="sm" variant="outline" className="h-9 rounded-full">
+            <Link to="/admin/audit">View audit log</Link>
+          </Button>
         </div>
-      </section>
+      </div>
 
-      {/* KPIs */}
-      <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      {/* KPI rail */}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {kpis.map(({ label, value, to }) => (
           <Link
             key={label}
             to={to}
-            className="group rounded-2xl border border-border/70 bg-card/50 p-4 transition-colors hover:border-primary/40 hover:bg-card"
+            className="group rounded-2xl border border-border/70 bg-card/50 p-4 transition-colors hover:border-primary/40"
           >
-            <span className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               {label}
             </span>
-
             <p className="mt-3 font-display text-3xl tabular-nums tracking-tight text-foreground">
               {value}
             </p>
-
             <span className="mt-3 inline-flex items-center gap-1 text-[11px] text-muted-foreground transition-colors group-hover:text-primary">
               Open
               <ArrowUpRight className="h-3 w-3" />
             </span>
           </Link>
         ))}
-      </section>
-
-      {/* Operational snapshot */}
-      <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        <Snapshot
-          label="Open support"
-          value={openTickets}
-          icon={Ticket}
-        />
-
-        <Snapshot
-          label="Active allocations"
-          value={activeAllocations}
-          icon={ChartIcon}
-        />
-
-        <Snapshot
-          label="Published experts"
-          value={data.traders.length}
-          icon={BadgeCheck}
-        />
-
-        <Snapshot
-          label="Audit events loaded"
-          value={data.audit.length}
-          icon={ClipboardList}
-        />
-      </section>
-
-      {/* Queues */}
-      <section>
-        <div className="mb-3">
-          <span className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            Operational queues
-          </span>
-
-          <h2 className="mt-2 font-display text-xl tracking-tight text-foreground">
-            What needs attention
-          </h2>
-        </div>
-
-        <div className="grid gap-3 md:grid-cols-3">
-          {queues.map(({ label, body, to }) => (
-            <Link
-              key={to}
-              to={to}
-              className="group flex items-center justify-between rounded-2xl border border-border/70 bg-card/40 p-5 transition-colors hover:border-primary/40 hover:bg-card"
-            >
-              <div>
-                <p className="font-display text-lg tracking-tight text-foreground">
-                  {label}
-                </p>
-
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {body}
-                </p>
-              </div>
-
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-border/70 text-muted-foreground transition-colors group-hover:border-primary/40 group-hover:text-primary">
-                <ArrowUpRight className="h-4 w-4" />
-              </span>
-            </Link>
-          ))}
-        </div>
-      </section>
-    </div>
-  );
-}
-
-function Snapshot({
-  label,
-  value,
-  icon: Icon,
-}: {
-  label: string;
-  value: number;
-  icon: LucideIcon;
-}) {
-  return (
-    <div className="rounded-2xl border border-border/70 bg-background p-5">
-      <div className="flex items-center justify-between gap-3">
-        <span className="text-[10.5px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-          {label}
-        </span>
-
-        <Icon className="h-4 w-4 text-muted-foreground" />
       </div>
 
-      <p className="mt-4 font-display text-2xl tabular-nums tracking-tight text-foreground">
-        {value}
-      </p>
+      {/* Queue cards */}
+      <div className="grid gap-3 md:grid-cols-3">
+        {queues.map(({ label, to, count }) => (
+          <Link
+            key={to}
+            to={to}
+            className="group flex items-center justify-between rounded-2xl border border-border/70 bg-card/40 p-5 transition-colors hover:border-primary/50"
+          >
+            <div>
+              <p className="font-display text-lg tracking-tight text-foreground">{label}</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {count === 0 ? 'Nothing waiting' : `${count} waiting`}
+              </p>
+            </div>
+            <span className="grid h-9 w-9 place-items-center rounded-full border border-border/70 text-muted-foreground transition-colors group-hover:border-primary/40 group-hover:text-primary">
+              <ArrowUpRight className="h-4 w-4" />
+            </span>
+          </Link>
+        ))}
+      </div>
     </div>
   );
-}
-
-function ChartIcon(props: React.ComponentProps<typeof ChartNoAxesCombined>) {
-  return <ChartNoAxesCombined {...props} />;
 }
 
 /* -----------------------------------------------------------------
  * Users
- * ---------------------------------------------------------------- */
+ * --------------------------------------------------------------- */
 
-function UsersPage({
-  data,
-}: {
-  data: AdminData;
-}) {
+function UsersPage({ data }: { data: AdminData }) {
   const [query, setQuery] = useState('');
-
   const filtered = useMemo(() => {
-    const search = query.trim().toLowerCase();
-
-    if (!search) {
-      return data.profiles;
-    }
-
-    return data.profiles.filter((profile) =>
-      `${profile.full_name ?? ''} ${profile.id} ${profile.country ?? ''}`
-        .toLowerCase()
-        .includes(search)
+    const q = query.trim().toLowerCase();
+    if (!q) return data.profiles;
+    return data.profiles.filter((x) =>
+      `${x.full_name ?? ''} ${x.id} ${x.country ?? ''}`.toLowerCase().includes(q)
     );
   }, [data.profiles, query]);
 
   return (
     <div className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative w-full sm:max-w-md">
+        <div className="relative w-full sm:max-w-sm">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-
           <input
             className="field-input pl-9"
             placeholder="Search by name, ID or country"
             value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            aria-label="Search user accounts"
+            onChange={(e) => setQuery(e.target.value)}
           />
         </div>
-
         <span className="text-xs text-muted-foreground">
           {filtered.length} of {data.profiles.length} accounts
         </span>
@@ -750,43 +409,39 @@ function UsersPage({
         <Empty
           eyebrow="No match"
           title="No accounts match your search"
-          body="Try a different name, account ID or country."
+          body="Try a different name, ID or country."
           icon={Search}
         />
       ) : (
         <div className="overflow-hidden rounded-2xl border border-border/70">
           <ul className="divide-y divide-border/60">
-            {filtered.map((profile) => (
+            {filtered.map((x) => (
               <li
-                key={profile.id}
-                className="flex flex-col gap-4 bg-background px-5 py-4 transition-colors hover:bg-muted/40 sm:flex-row sm:items-center sm:justify-between"
+                key={x.id}
+                className="flex flex-col gap-3 bg-background px-5 py-4 transition-colors hover:bg-muted/40 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex items-center gap-2">
                     <strong className="truncate text-sm text-foreground">
-                      {profile.full_name || 'Unnamed account'}
+                      {x.full_name || 'Unnamed account'}
                     </strong>
-
-                    {profile.country && (
-                      <span className="rounded-full border border-border/70 bg-muted/50 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                        {profile.country}
+                    {x.country && (
+                      <span className="rounded-full border border-border/70 bg-muted/50 px-2 py-0.5 text-[10.5px] font-medium uppercase tracking-wide text-muted-foreground">
+                        {x.country}
                       </span>
                     )}
                   </div>
-
-                  <p className="mt-1 truncate font-mono text-[11px] text-muted-foreground">
-                    {profile.id}
+                  <p className="mt-1 truncate font-mono text-[11.5px] text-muted-foreground">
+                    {x.id}
                     <span className="mx-1.5 text-border">·</span>
-                    Joined {date(profile.created_at)}
+                    Joined {date(x.created_at)}
                   </p>
                 </div>
-
-                <div className="flex shrink-0 items-center gap-4">
+                <div className="flex shrink-0 items-center gap-4 self-end sm:self-auto">
                   <span className="font-display text-sm tabular-nums text-foreground">
-                    {money(profile.balance)}
+                    {money(x.balance)}
                   </span>
-
-                  <Status value={profile.kyc_status} />
+                  <Status value={x.kyc_status} />
                 </div>
               </li>
             ))}
@@ -795,136 +450,98 @@ function UsersPage({
       )}
 
       <p className="text-xs leading-6 text-muted-foreground">
-        This workspace is an operational view. Database policies and
-        authorization functions remain the source of truth for permissions.
+        Roles and balances are protected by database functions. The Super Admin
+        account cannot be altered from the dashboard.
       </p>
     </div>
   );
 }
 
 /* -----------------------------------------------------------------
- * Deposit / withdrawal review queues
- * ---------------------------------------------------------------- */
+ * Deposits / Withdrawals review queue
+ * --------------------------------------------------------------- */
 
 type ReviewQueueProps = {
   kind: 'deposits' | 'withdrawals';
-  rows:
-    | Tables['deposits']['Row'][]
-    | Tables['withdrawals']['Row'][];
+  rows: Tables['deposits']['Row'][] | Tables['withdrawals']['Row'][];
   busy: boolean;
-  act: (
-    fn: () => PromiseLike<{ error: unknown }>,
-    message: string
-  ) => Promise<void>;
+  act: (fn: () => PromiseLike<{ error: unknown }>, message: string) => Promise<void>;
 };
 
-function ReviewQueuePage({
-  kind,
-  rows,
-  busy,
-  act,
-}: ReviewQueueProps) {
+function ReviewQueuePage({ kind, rows, busy, act }: ReviewQueueProps) {
   const isDeposit = kind === 'deposits';
+  const notice = isDeposit
+    ? 'No automated wallet verification is connected. Do not confirm a deposit without independent payment verification.'
+    : 'No transfer processor is connected. Mark complete only after a verified external payout; rejected funds are released back to the user.';
 
-  const pending = rows.filter(
-    (row) => row.status === 'pending'
-  );
-
-  const resolved = rows.filter(
-    (row) => row.status !== 'pending'
-  );
+  const pending = rows.filter((x) => x.status === 'pending');
+  const resolved = rows.filter((x) => x.status !== 'pending');
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start gap-3 rounded-2xl border border-amber-500/20 bg-amber-500/5 px-4 py-3.5">
+      <div className="notice-strip flex items-start gap-3">
         <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
-
-        <p className="text-sm leading-6 text-muted-foreground">
-          {isDeposit
-            ? 'Confirm a deposit only after independently verifying the payment reference and receiving wallet record.'
-            : 'Complete a withdrawal only after the external payout has been independently verified.'}
-        </p>
+        <p>{notice}</p>
       </div>
 
       <section>
         <div className="mb-3 flex items-center justify-between">
-          <div>
-            <span className="text-[10.5px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
-              Queue
-            </span>
-
-            <h2 className="mt-1 font-display text-xl tracking-tight text-foreground">
-              Waiting for review
-            </h2>
-          </div>
-
+          <h3 className="font-display text-lg tracking-tight text-foreground">
+            Waiting for review
+          </h3>
           <span className="text-xs text-muted-foreground">
-            {pending.length === 0
-              ? 'Nothing waiting'
-              : `${pending.length} pending`}
+            {pending.length === 0 ? 'Nothing waiting' : `${pending.length} pending`}
           </span>
         </div>
 
         {pending.length === 0 ? (
           <Empty
             eyebrow="Queue clear"
-            title={
-              isDeposit
-                ? 'No deposits waiting'
-                : 'No withdrawals waiting'
-            }
-            body="New requests will appear here when clients submit them."
+            title={isDeposit ? 'No deposits waiting' : 'No withdrawals waiting'}
+            body="New requests will appear here as clients submit them."
             icon={isDeposit ? Wallet : CreditCard}
             compact
           />
         ) : (
           <ul className="space-y-3">
-            {pending.map((row) => (
+            {pending.map((x) => (
               <li
-                key={row.id}
-                className="rounded-2xl border border-border/70 bg-background p-5"
+                key={x.id}
+                className="rounded-2xl border border-border/70 bg-background p-5 transition-colors hover:border-primary/30"
               >
-                <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-display text-2xl tabular-nums tracking-tight text-foreground">
-                        {money(row.amount)}
+                      <p className="font-display text-xl tabular-nums tracking-tight text-foreground">
+                        {money(x.amount)}
                       </p>
-
                       <span className="text-xs text-muted-foreground">
-                        {row.asset} on {row.network}
+                        {x.asset} on {x.network}
                       </span>
                     </div>
-
-                    <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">
-                      User {row.user_id}
+                    <p className="mt-2 break-all font-mono text-[11.5px] text-muted-foreground">
+                      User {x.user_id}
                       <span className="mx-1.5 text-border">·</span>
-                      {date(row.created_at)}
+                      {date(x.created_at)}
                     </p>
-
-                    {'tx_reference' in row &&
-                      row.tx_reference && (
-                        <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">
-                          Reference: {row.tx_reference}
-                        </p>
-                      )}
-
-                    {'wallet_address' in row &&
-                      row.wallet_address && (
-                        <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">
-                          Wallet: {row.wallet_address}
-                        </p>
-                      )}
-
-                    {'destination' in row &&
-                      row.destination && (
-                        <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">
-                          Destination: {row.destination}
-                        </p>
-                      )}
+                    {'tx_reference' in x && x.tx_reference && (
+                      <p className="mt-2 break-all font-mono text-[11.5px] text-muted-foreground">
+                        Ref: {x.tx_reference}
+                      </p>
+                    )}
+                    {'wallet_address' in x && x.wallet_address && (
+                      <p className="mt-2 break-all font-mono text-[11.5px] text-muted-foreground">
+                        Wallet: {x.wallet_address}
+                      </p>
+                    )}
+                    {'destination' in x && x.destination && (
+                      <p className="mt-2 break-all font-mono text-[11.5px] text-muted-foreground">
+                        Destination: {x.destination}
+                      </p>
+                    )}
                   </div>
 
-                  <div className="flex shrink-0 flex-wrap gap-2 lg:w-32 lg:flex-col">
+                  <div className="flex shrink-0 flex-wrap items-center gap-2 sm:flex-col sm:items-stretch">
                     <Button
                       size="sm"
                       disabled={busy}
@@ -933,18 +550,14 @@ function ReviewQueuePage({
                         act(
                           () =>
                             supabase.rpc(
-                              isDeposit
-                                ? 'review_deposit'
-                                : 'review_withdrawal',
+                              isDeposit ? 'review_deposit' : 'review_withdrawal',
                               {
-                                _id: row.id,
-                                _status: isDeposit
-                                  ? 'confirmed'
-                                  : 'completed',
+                                _id: x.id,
+                                _status: isDeposit ? 'confirmed' : 'completed',
                               } as never
                             ),
                           isDeposit
-                            ? 'Deposit confirmed.'
+                            ? 'Deposit confirmed. Guide the client toward copy trading next.'
                             : 'Withdrawal marked completed.'
                         )
                       }
@@ -954,12 +567,8 @@ function ReviewQueuePage({
                       ) : (
                         <Check className="h-3.5 w-3.5" />
                       )}
-
-                      {isDeposit
-                        ? 'Confirm'
-                        : 'Complete'}
+                      {isDeposit ? 'Confirm' : 'Complete'}
                     </Button>
-
                     <Button
                       size="sm"
                       variant="outline"
@@ -968,17 +577,10 @@ function ReviewQueuePage({
                         act(
                           () =>
                             supabase.rpc(
-                              isDeposit
-                                ? 'review_deposit'
-                                : 'review_withdrawal',
-                              {
-                                _id: row.id,
-                                _status: 'rejected',
-                              } as never
+                              isDeposit ? 'review_deposit' : 'review_withdrawal',
+                              { _id: x.id, _status: 'rejected' } as never
                             ),
-                          isDeposit
-                            ? 'Deposit rejected.'
-                            : 'Withdrawal rejected.'
+                          'Request rejected.'
                         )
                       }
                     >
@@ -995,44 +597,31 @@ function ReviewQueuePage({
       {resolved.length > 0 && (
         <section>
           <div className="mb-3 flex items-center justify-between">
-            <div>
-              <span className="text-[10.5px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
-                History
-              </span>
-
-              <h2 className="mt-1 font-display text-xl tracking-tight text-foreground">
-                Recently resolved
-              </h2>
-            </div>
-
-            <span className="text-xs text-muted-foreground">
-              {resolved.length} entries
-            </span>
+            <h3 className="font-display text-lg tracking-tight text-foreground">
+              Recently resolved
+            </h3>
+            <span className="text-xs text-muted-foreground">{resolved.length} entries</span>
           </div>
-
           <ul className="divide-y divide-border/60 overflow-hidden rounded-2xl border border-border/70">
-            {resolved.slice(0, 20).map((row) => (
+            {resolved.slice(0, 20).map((x) => (
               <li
-                key={row.id}
-                className="flex flex-col gap-3 bg-background px-5 py-4 transition-colors hover:bg-muted/40 sm:flex-row sm:items-center sm:justify-between"
+                key={x.id}
+                className="flex flex-col gap-3 bg-background px-5 py-3.5 transition-colors hover:bg-muted/40 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div className="min-w-0">
-                  <p className="text-sm text-foreground">
-                    {money(row.amount)}
+                  <p className="text-[13.5px] text-foreground">
+                    {money(x.amount)}{' '}
                     <span className="text-muted-foreground">
-                      {' '}
-                      {row.asset} on {row.network}
+                      {x.asset} on {x.network}
                     </span>
                   </p>
-
                   <p className="mt-1 truncate font-mono text-[11px] text-muted-foreground">
-                    {row.user_id}
+                    {x.user_id}
                     <span className="mx-1.5 text-border">·</span>
-                    {date(row.created_at)}
+                    {date(x.created_at)}
                   </p>
                 </div>
-
-                <Status value={row.status} />
+                <Status value={x.status} />
               </li>
             ))}
           </ul>
@@ -1044,7 +633,7 @@ function ReviewQueuePage({
 
 /* -----------------------------------------------------------------
  * Verification
- * ---------------------------------------------------------------- */
+ * --------------------------------------------------------------- */
 
 function VerificationPage({
   data,
@@ -1053,19 +642,15 @@ function VerificationPage({
 }: {
   data: AdminData;
   busy: boolean;
-  act: (
-    fn: () => PromiseLike<{ error: unknown }>,
-    message: string
-  ) => Promise<void>;
+  act: (fn: () => PromiseLike<{ error: unknown }>, message: string) => Promise<void>;
 }) {
   return (
     <div className="space-y-6">
-      <div className="flex items-start gap-3 rounded-2xl border border-amber-500/20 bg-amber-500/5 px-4 py-3.5">
+      <div className="notice-strip flex items-start gap-3">
         <Lock className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
-
-        <p className="text-sm leading-6 text-muted-foreground">
-          Identity approval should only happen after the required documents
-          and checks have been independently reviewed.
+        <p>
+          Document collection is not integrated. Do not approve an identity
+          submission without an independent verified check.
         </p>
       </div>
 
@@ -1073,34 +658,30 @@ function VerificationPage({
         <Empty
           eyebrow="All clear"
           title="No identity reviews waiting"
-          body="New pending KYC submissions will appear here."
+          body="New KYC submissions will appear here as clients submit them."
           icon={ShieldCheck}
         />
       ) : (
         <ul className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {data.verification.map((profile) => (
+          {data.verification.map((x) => (
             <li
-              key={profile.id}
+              key={x.id}
               className="flex flex-col rounded-2xl border border-border/70 bg-background p-5"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <strong className="truncate text-sm text-foreground">
-                    {profile.full_name || 'Unnamed account'}
+                    {x.full_name || 'Unnamed account'}
                   </strong>
-
                   <p className="mt-1 truncate font-mono text-[11px] text-muted-foreground">
-                    {profile.id}
+                    {x.id}
                   </p>
                 </div>
-
-                <Status value={profile.kyc_status} />
+                <Status value={x.kyc_status} />
               </div>
-
               <p className="mt-3 text-xs text-muted-foreground">
-                {profile.country || 'Country not provided'}
+                {x.country || 'Country not provided'}
               </p>
-
               <div className="mt-5 flex gap-2">
                 <Button
                   size="sm"
@@ -1110,7 +691,7 @@ function VerificationPage({
                     act(
                       () =>
                         supabase.rpc('review_kyc', {
-                          _user_id: profile.id,
+                          _user_id: x.id,
                           _status: 'verified',
                         } as never),
                       'Identity marked verified.'
@@ -1119,7 +700,6 @@ function VerificationPage({
                 >
                   Approve
                 </Button>
-
                 <Button
                   size="sm"
                   variant="outline"
@@ -1129,7 +709,7 @@ function VerificationPage({
                     act(
                       () =>
                         supabase.rpc('review_kyc', {
-                          _user_id: profile.id,
+                          _user_id: x.id,
                           _status: 'rejected',
                         } as never),
                       'Identity rejected.'
@@ -1149,22 +729,16 @@ function VerificationPage({
 
 /* -----------------------------------------------------------------
  * Traders
- * ---------------------------------------------------------------- */
+ * --------------------------------------------------------------- */
 
-function TradersPage({
-  data,
-}: {
-  data: AdminData;
-}) {
+function TradersPage({ data }: { data: AdminData }) {
   return (
     <div className="space-y-6">
-      <div className="flex items-start gap-3 rounded-2xl border border-amber-500/20 bg-amber-500/5 px-4 py-3.5">
+      <div className="notice-strip flex items-start gap-3">
         <BadgeCheck className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
-
-        <p className="text-sm leading-6 text-muted-foreground">
-          Marketplace metrics are only as reliable as the underlying
-          execution and reporting source. Do not present illustrative
-          performance as verified live trading results.
+        <p>
+          Profiles and reported returns are illustrative. Live execution and
+          independently verified performance are not connected.
         </p>
       </div>
 
@@ -1172,50 +746,36 @@ function TradersPage({
         <Empty
           eyebrow="No profiles"
           title="No trading experts yet"
-          body="Published expert profiles will appear here."
+          body="Once you publish expert profiles, they will appear here."
           icon={BadgeCheck}
         />
       ) : (
         <ul className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {data.traders.map((trader) => (
+          {data.traders.map((x) => (
             <li
-              key={trader.id}
+              key={x.id}
               className="rounded-2xl border border-border/70 bg-background p-5 transition-colors hover:border-primary/30"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <strong className="truncate text-sm text-foreground">
-                    {trader.name}
-                  </strong>
-
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {trader.strategy}
-                  </p>
+                  <strong className="truncate text-sm text-foreground">{x.name}</strong>
+                  <p className="mt-1 text-xs text-muted-foreground">{x.strategy}</p>
                 </div>
-
-                <span className="shrink-0 rounded-full border border-border/70 bg-muted/50 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                  {trader.risk_level}
+                <span className="shrink-0 rounded-full border border-border/70 bg-muted/50 px-2 py-0.5 text-[10.5px] font-medium uppercase tracking-wide text-muted-foreground">
+                  {x.risk_level}
                 </span>
               </div>
-
-              <dl className="mt-5 grid grid-cols-2 gap-3">
+              <dl className="mt-5 grid grid-cols-2 gap-3 text-xs">
                 <div>
-                  <dt className="text-[11px] text-muted-foreground">
-                    Followers
-                  </dt>
-
+                  <dt className="text-muted-foreground">Followers</dt>
                   <dd className="mt-1 font-display text-lg tabular-nums text-foreground">
-                    {trader.followers}
+                    {x.followers}
                   </dd>
                 </div>
-
                 <div>
-                  <dt className="text-[11px] text-muted-foreground">
-                    Reported AUM
-                  </dt>
-
+                  <dt className="text-muted-foreground">AUM</dt>
                   <dd className="mt-1 font-display text-lg tabular-nums text-foreground">
-                    {money(trader.aum)}
+                    {money(x.aum)}
                   </dd>
                 </div>
               </dl>
@@ -1223,13 +783,18 @@ function TradersPage({
           ))}
         </ul>
       )}
+
+      <p className="text-xs text-muted-foreground">
+        Trader editing is not available until execution data and review
+        workflows are connected.
+      </p>
     </div>
   );
 }
 
 /* -----------------------------------------------------------------
  * Support
- * ---------------------------------------------------------------- */
+ * --------------------------------------------------------------- */
 
 function SupportPage({
   data,
@@ -1238,190 +803,117 @@ function SupportPage({
 }: {
   data: AdminData;
   busy: boolean;
-  act: (
-    fn: () => PromiseLike<{ error: unknown }>,
-    message: string
-  ) => Promise<void>;
+  act: (fn: () => PromiseLike<{ error: unknown }>, message: string) => Promise<void>;
 }) {
   const [reply, setReply] = useState<Record<string, string>>({});
-  const [filter, setFilter] = useState<
-    'open' | 'resolved' | 'all'
-  >('open');
+  const [filter, setFilter] = useState<'open' | 'resolved' | 'all'>('open');
 
   const rows = useMemo(() => {
-    if (filter === 'all') {
-      return data.tickets;
-    }
-
-    return data.tickets.filter((ticket) =>
-      filter === 'open'
-        ? ticket.status !== 'resolved'
-        : ticket.status === 'resolved'
+    if (filter === 'all') return data.tickets;
+    return data.tickets.filter((t) =>
+      filter === 'open' ? t.status !== 'resolved' : t.status === 'resolved'
     );
   }, [data.tickets, filter]);
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center gap-2">
-        {(['open', 'resolved', 'all'] as const).map((value) => (
+        {(['open', 'resolved', 'all'] as const).map((f) => (
           <button
-            key={value}
+            key={f}
             type="button"
-            onClick={() => setFilter(value)}
+            onClick={() => setFilter(f)}
             className={`rounded-full border px-3.5 py-1.5 text-xs font-medium capitalize transition-colors ${
-              filter === value
+              filter === f
                 ? 'border-primary/40 bg-primary/10 text-primary'
                 : 'border-border/70 text-muted-foreground hover:text-foreground'
             }`}
           >
-            {value}
+            {f}
           </button>
         ))}
-
         <span className="ml-auto text-xs text-muted-foreground">
-          {rows.length}{' '}
-          {rows.length === 1 ? 'request' : 'requests'}
+          {rows.length} {rows.length === 1 ? 'request' : 'requests'}
         </span>
       </div>
 
       {rows.length === 0 ? (
         <Empty
           eyebrow={filter === 'open' ? 'Inbox clear' : 'Nothing here'}
-          title={
-            filter === 'open'
-              ? 'No open requests'
-              : 'No requests in this view'
-          }
-          body="Client support requests will appear here."
+          title={filter === 'open' ? 'No open requests' : 'No resolved requests yet'}
+          body="Requests from clients will appear here as they come in."
           icon={Inbox}
         />
       ) : (
         <ul className="space-y-4">
-          {rows.map((ticket) => (
+          {rows.map((x) => (
             <li
-              key={ticket.id}
+              key={x.id}
               className="rounded-2xl border border-border/70 bg-background p-5 sm:p-6"
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <strong className="text-sm text-foreground">
-                    {ticket.subject}
-                  </strong>
-
+                  <strong className="text-sm text-foreground">{x.subject}</strong>
                   <p className="mt-1 truncate font-mono text-[11px] text-muted-foreground">
-                    User {ticket.user_id}
+                    User {x.user_id}
                     <span className="mx-1.5 text-border">·</span>
-                    {date(ticket.created_at)}
+                    {date(x.created_at)}
                   </p>
                 </div>
-
-                <Status value={ticket.status} />
+                <Status value={x.status} />
               </div>
 
               <p className="mt-5 whitespace-pre-wrap text-sm leading-7 text-foreground/90">
-                {ticket.message}
+                {x.message}
               </p>
 
-              {ticket.reply && (
+              {x.reply && (
                 <div className="mt-5 rounded-xl border border-primary/20 bg-primary/5 p-4">
-                  <p className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-primary">
-                    Previous reply
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
+                    Your reply
                   </p>
-
                   <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-foreground/90">
-                    {ticket.reply}
+                    {x.reply}
                   </p>
                 </div>
               )}
 
-              {ticket.status !== 'resolved' && (
+              {x.status !== 'resolved' && (
                 <form
                   className="mt-5 space-y-3"
-                  onSubmit={(event) => {
-                    event.preventDefault();
-
-                    act(
-                      async () => {
-                        const text =
-                          reply[ticket.id]?.trim() ?? '';
-
-                        if (!text) {
-                          return {
-                            error: new Error(
-                              'Write a reply before resolving the ticket.'
-                            ),
-                          };
-                        }
-
-                        const updateResult =
-                          await supabase
-                            .from('support_tickets')
-                            .update({
-                              reply: text,
-                              status: 'resolved',
-                            })
-                            .eq('id', ticket.id);
-
-                        if (updateResult.error) {
-                          return {
-                            error: updateResult.error,
-                          };
-                        }
-
-                        /*
-                         * Notification delivery is intentionally separate.
-                         * If the notification table is unavailable, the
-                         * ticket should not be falsely reported as failed
-                         * after the support reply itself was saved.
-                         */
-                        const notificationResult =
-                          await supabase
-                            .from('notifications')
-                            .insert({
-                              user_id: ticket.user_id,
-                              title: 'Support replied',
-                              message: `Your request "${ticket.subject}" has a response.`,
-                            });
-
-                        if (notificationResult.error) {
-                          return {
-                            error: null,
-                          };
-                        }
-
-                        return {
-                          error: null,
-                        };
-                      },
-                      'Reply sent and ticket resolved.'
-                    );
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    act(async () => {
+                      const { error } = await supabase
+                        .from('support_tickets')
+                        .update({ reply: reply[x.id] ?? '', status: 'resolved' })
+                        .eq('id', x.id);
+                      if (error) return { error };
+                      const { error: notificationError } = await supabase
+                        .from('notifications')
+                        .insert({
+                          user_id: x.user_id,
+                          title: 'Support replied',
+                          message: `Your request "${x.subject}" has a response.`,
+                        });
+                      return { error: notificationError };
+                    }, 'Reply sent and ticket resolved.');
                   }}
                 >
                   <textarea
                     className="field-input min-h-24"
                     required
-                    value={reply[ticket.id] ?? ''}
-                    onChange={(event) =>
-                      setReply((current) => ({
-                        ...current,
-                        [ticket.id]: event.target.value,
-                      }))
-                    }
-                    placeholder="Write a clear response."
+                    value={reply[x.id] ?? ''}
+                    onChange={(e) => setReply({ ...reply, [x.id]: e.target.value })}
+                    placeholder="Write a clear response. Plain language works best."
                   />
-
                   <div className="flex justify-end">
-                    <Button
-                      size="sm"
-                      disabled={busy}
-                      aria-busy={busy}
-                    >
+                    <Button size="sm" disabled={busy} aria-busy={busy}>
                       {busy ? (
                         <Loader2 className="h-3.5 w-3.5 animate-spin" />
                       ) : (
                         <Check className="h-3.5 w-3.5" />
                       )}
-
                       Send reply and resolve
                     </Button>
                   </div>
@@ -1437,149 +929,101 @@ function SupportPage({
 
 /* -----------------------------------------------------------------
  * Audit
- * ---------------------------------------------------------------- */
+ * --------------------------------------------------------------- */
 
-function AuditPage({
-  data,
-}: {
-  data: AdminData;
-}) {
+function AuditPage({ data }: { data: AdminData }) {
   if (data.audit.length === 0) {
     return (
       <Empty
         eyebrow="No entries"
         title="No audit events yet"
-        body="Operational actions will be recorded here as they occur."
+        body="Operational actions will be recorded here in order."
         icon={ClipboardList}
       />
     );
   }
 
   return (
-    <div className="rounded-2xl border border-border/70 bg-background p-5 sm:p-6">
-      <ol className="relative space-y-1 border-l border-border/60 pl-6">
-        {data.audit.map((entry) => (
-          <li
-            key={entry.id}
-            className="relative py-3"
-          >
-            <span
-              aria-hidden="true"
-              className="absolute -left-[29px] top-5 h-2 w-2 rounded-full bg-primary/70 ring-4 ring-background"
-            />
-
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <p className="text-sm font-medium capitalize text-foreground">
-                {entry.action.replaceAll('_', ' ')}
-              </p>
-
-              <span className="text-[11px] text-muted-foreground">
-                {date(entry.created_at)}
-              </span>
-            </div>
-
-            <p className="mt-1 truncate font-mono text-[11px] text-muted-foreground">
-              {entry.entity_type}
-              {entry.entity_id
-                ? ` · ${entry.entity_id}`
-                : ''}
+    <ol className="relative space-y-1 border-l border-border/60 pl-5">
+      {data.audit.map((x) => (
+        <li key={x.id} className="relative py-3">
+          <span
+            aria-hidden="true"
+            className="absolute -left-[26px] top-5 h-2 w-2 rounded-full bg-primary/70"
+          />
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <p className="text-sm font-medium capitalize text-foreground">
+              {x.action.replaceAll('_', ' ')}
             </p>
-          </li>
-        ))}
-      </ol>
-    </div>
-  );
-}
-
-/* -----------------------------------------------------------------
- * Crypto
- * ---------------------------------------------------------------- */
-
-function CryptoPageNote() {
-  return (
-    <div className="flex items-start gap-3 rounded-2xl border border-amber-500/20 bg-amber-500/5 px-4 py-3.5">
-      <Coins className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
-
-      <p className="text-sm leading-6 text-muted-foreground">
-        Receiving wallet configuration should be treated as financial
-        infrastructure. Changes should be audited and protected by
-        server-side authorization.
-      </p>
-    </div>
+            <span className="text-[11px] text-muted-foreground">
+              {date(x.created_at)}
+            </span>
+          </div>
+          <p className="mt-1 truncate font-mono text-[11px] text-muted-foreground">
+            {x.entity_type}
+            {x.entity_id ? ` · ${x.entity_id}` : ''}
+          </p>
+        </li>
+      ))}
+    </ol>
   );
 }
 
 /* -----------------------------------------------------------------
  * Settings
- * ---------------------------------------------------------------- */
+ * --------------------------------------------------------------- */
 
 function SettingsPage() {
   const items = [
     {
       icon: Settings2,
       title: 'Theme builder',
-      body: 'Manage colors, typography, surfaces, radius, charts, status tokens and visual system settings.',
+      body: 'Colors, fonts, radius, charts and status tokens are managed by the Super Admin theme system.',
     },
     {
       icon: Lock,
       title: 'Secrets and provider keys',
-      body: 'Resend, TronGrid and other provider credentials belong in secure server-side environment configuration.',
+      body: 'Resend, TronGrid and blockchain monitoring keys live in the secure server environment, never in a client form.',
     },
     {
       icon: FileSearch,
       title: 'Infrastructure and backups',
-      body: 'Database status, backups and environment configuration should be handled at the platform layer.',
+      body: 'Backups, environment variables and database status are handled at the platform layer.',
     },
     {
       icon: ShieldCheck,
       title: 'Security center',
-      body: 'Security-sensitive configuration changes should require appropriate authorization and create audit records.',
+      body: 'Maintenance mode, API keys and security controls are audited every time they change.',
     },
   ] as const;
 
   return (
-    <div className="max-w-4xl space-y-5">
-      <div className="relative overflow-hidden rounded-3xl border border-border/70 bg-gradient-to-br from-secondary/60 via-background to-background p-6 sm:p-8">
-        <div
-          aria-hidden="true"
-          className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-primary/10 blur-3xl"
-        />
-
-        <div className="relative">
-          <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-primary">
-            <ShieldCheck className="h-3 w-3" />
-            Super Admin
-          </span>
-
-          <h2 className="mt-5 font-display text-2xl tracking-tight text-foreground sm:text-3xl">
-            Platform configuration
-          </h2>
-
-          <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground">
-            High-impact platform controls should remain explicit, auditable
-            and server-authorized. Secrets should never be exposed through
-            client-side settings forms.
-          </p>
-        </div>
+    <div className="max-w-3xl space-y-4">
+      <div className="rounded-2xl border border-border/70 bg-card/50 p-6">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          Super Admin only
+        </span>
+        <h2 className="mt-3 font-display text-2xl tracking-tight text-foreground">
+          Platform configuration
+        </h2>
+        <p className="mt-3 text-sm leading-7 text-muted-foreground">
+          These controls are protected by dedicated, audited infrastructure.
+          Non-functional toggles are not exposed in the dashboard. Manage
+          secrets through the secure server environment.
+        </p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
         {items.map(({ icon: Icon, title, body }) => (
           <div
             key={title}
-            className="rounded-2xl border border-border/70 bg-background p-5 transition-colors hover:border-primary/25"
+            className="rounded-2xl border border-border/70 bg-background p-5"
           >
             <span className="grid h-10 w-10 place-items-center rounded-xl bg-primary/10 text-primary">
-              <Icon className="h-4 w-4" />
+              <Icon className="h-4.5 w-4.5" />
             </span>
-
-            <p className="mt-4 text-sm font-medium text-foreground">
-              {title}
-            </p>
-
-            <p className="mt-2 text-xs leading-6 text-muted-foreground">
-              {body}
-            </p>
+            <p className="mt-4 text-sm font-medium text-foreground">{title}</p>
+            <p className="mt-1 text-xs leading-6 text-muted-foreground">{body}</p>
           </div>
         ))}
       </div>
