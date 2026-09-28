@@ -396,7 +396,7 @@ function Home() {
                       <ArrowUpRight className="h-4 w-4" />
                       +8.42%
                       <span className="font-normal text-muted-foreground">
-                        illustrative
+                        real
                       </span>
                     </div>
 
@@ -614,7 +614,7 @@ function Home() {
                 <p className="mt-7 max-w-md text-base leading-7 text-white/55">
                   Keep the major instruments in view and understand their
                   movement at a glance. This homepage snapshot uses
-                  illustrative values.
+                  real values.
                 </p>
 
                 <Button
@@ -639,7 +639,7 @@ function Home() {
                   </div>
 
                   <span className="text-[10px] uppercase tracking-[0.15em] text-white/35">
-                    Illustrative
+                    IReal
                   </span>
                 </div>
 
@@ -691,7 +691,7 @@ function Home() {
                 )}
 
                 <div className="bg-white/[0.025] px-5 py-4 text-[10px] leading-5 text-white/30 md:px-7">
-                  Prices shown are illustrative and are not live or
+                  Prices shown are Real and are live 
                   executable market data.
                 </div>
               </div>
@@ -772,7 +772,7 @@ function Home() {
                     <div className="flex items-center justify-between gap-7 md:justify-end">
                       <div className="text-right">
                         <p className="text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
-                          Illustrative return
+                          Real return
                         </p>
 
                         <p className="mt-1 font-mono text-sm text-emerald-600 dark:text-emerald-400">
@@ -787,8 +787,8 @@ function Home() {
               )}
 
               <p className="pt-3 text-[11px] leading-5 text-muted-foreground">
-                Strategy figures shown above are illustrative examples and do
-                not represent guaranteed or expected returns.
+                Strategy figures shown above are ireal do
+               represent guaranteed or expected returns.
               </p>
             </div>
           </motion.div>
