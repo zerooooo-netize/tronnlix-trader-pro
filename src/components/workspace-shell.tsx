@@ -780,7 +780,7 @@ function SidebarInner({
             </p>
 
             <p className="mt-0.5 truncate text-[12.5px] font-medium text-foreground">
-              Tronnlix Trade
+              Tronnlix broker
             </p>
           </div>
         </div>
