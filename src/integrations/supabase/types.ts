@@ -240,6 +240,57 @@ export type Database = {
         }
         Relationships: []
       }
+      posts: {
+        Row: {
+          author_name: string | null
+          body: string | null
+          category: string | null
+          cover_url: string | null
+          created_at: string | null
+          deleted_at: string | null
+          excerpt: string | null
+          featured: boolean | null
+          id: string
+          published_at: string | null
+          reading_minutes: number | null
+          slug: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          author_name?: string | null
+          body?: string | null
+          category?: string | null
+          cover_url?: string | null
+          created_at?: string | null
+          deleted_at?: string | null
+          excerpt?: string | null
+          featured?: boolean | null
+          id?: string
+          published_at?: string | null
+          reading_minutes?: number | null
+          slug: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          author_name?: string | null
+          body?: string | null
+          category?: string | null
+          cover_url?: string | null
+          created_at?: string | null
+          deleted_at?: string | null
+          excerpt?: string | null
+          featured?: boolean | null
+          id?: string
+          published_at?: string | null
+          reading_minutes?: number | null
+          slug?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           balance: number
