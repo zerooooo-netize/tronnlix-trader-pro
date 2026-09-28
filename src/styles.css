@@ -59,6 +59,14 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-hero-foreground: var(--hero-foreground);
+  --color-hero-muted: var(--hero-muted);
+  --color-hero-accent: var(--hero-accent);
+  --color-hero-line: var(--hero-line);
+  --color-market-foreground: var(--market-foreground);
+  --color-market-muted: var(--market-muted);
+  --color-market-line: var(--market-line);
+  --color-market-positive: var(--market-positive);
 }
 
 :root {
