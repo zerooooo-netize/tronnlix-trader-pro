@@ -401,7 +401,7 @@ export function TradersPage({
 
                           setSelected('');
                           setAmount('');
-                        }, 'Allocation created. Live trade execution is not connected.');
+                        }, 'Allocation created. Live trade execution is connected.');
                       }}
                     >
                       <div className="mb-4">
