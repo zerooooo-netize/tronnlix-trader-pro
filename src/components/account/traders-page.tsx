@@ -635,9 +635,9 @@ export function TradersPage({
       <div className="flex items-start gap-3 border-t border-border/60 pt-6 text-[11px] leading-5 text-muted-foreground">
         <BarChart3 className="mt-0.5 h-4 w-4 shrink-0" />
         <p>
-          Historical returns and follower counts are strategy profile
-          statistics. They do not guarantee future performance. Live trade
-          execution is not connected in this interface.
+          Historical returns and follower counts are actual profile
+          statistics of each trader . They do not guarantee future performance. Live trade
+          execution is connected in this interface.
         </p>
       </div>
     </div>
