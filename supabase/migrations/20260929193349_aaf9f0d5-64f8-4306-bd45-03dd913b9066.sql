@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.audit_trader_change() FROM PUBLIC, anon, authenticated;
