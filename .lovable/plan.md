@@ -1,7 +1,7 @@
 # Tronnlix Trade redesign and copy-trading journey
 
 ## Direction
-Evolve the existing green identity into a sharper emerald, ink, and cool-neutral system with the current sans-serif typography. The copy-trading marketplace becomes an editorial research surface, not a grid of identical cards. Public pages, account screens, and staff screens retain a shared visual language but use distinct page compositions. Remove em dashes from visible copy and improve small-screen density, navigation, focus states, and touch targets.
+Evolve the existing green identity into a sharper emerald, ink, and cool-neutral system with the current sans-serif typography. The copy-trading marketplace becomes an editorial research surface, not a grid of identical cards. Public pages, account screens, and staff screens retain a shared visual language but use distinct page compositions. create storage bucket and let users upload documents during kyc and let admin aprove Remove em dashes from visible copy and improve small-screen density, navigation, focus states, and touch targets.
 
 ## What will change
 1. Audit every existing screen for repeated layouts, misleading claims, cramped mobile controls, missing states, and inaccessible interactions. Refine the shared header, workspace shell, forms, status language, empty/loading states, and public page compositions.
@@ -9,6 +9,9 @@ Evolve the existing green identity into a sharper emerald, ink, and cool-neutral
 3. Add staff-owned trader management: create/edit, activate/suspend, feature, duplicate, archive/restore, ordering, and performance-entry management. Store the new fields and history with explicit grants, RLS, safe status rules, and audit records. Marketplace settings control the supported layout, sorting, and pagination options.
 4. Replace the post-deposit dead end with a confirmation-to-discovery path. Only a deposit independently marked confirmed by staff shows the confirmed amount, asset/network, reference, and refreshed balance, followed by a prominent “Choose Your Trading Expert” action. A customer’s “I’ve paid” report remains pending and never appears as confirmed.
 5. Verify public pages and protected flows at desktop and phone widths, check compilation and visible copy, then update the roadmap with what is complete and what still needs external providers.
+6. Ensure admin can verify user kyc documents, and ensure resend will be sending all alerts to users let the resend api be added from admin side and ensure every sector of the site know the site is hosted under https://broker.tronnlix.com/ and always redirect there even login with google and if its not possible remove it there
+7. After a user has a made deposit that is confirmed and can now allocate funds to a trader they want to copy trade let them also have an interface to conncet to mt4,5 and the rest as many as you can and the fields and anything they need to concert
+8. Build a system to automatically monitor block chain after a use click they have paid so the transaction hash can be optional and it if gets it using cron or triger it updates if it fails it wait for admin, also admin can change state to not confirmed
 
 ## Technical boundaries
 Financial balance and allocation transitions remain in checked database functions. Staff management uses server-validated roles and RLS, not client-side role claims. Live execution, blockchain confirmation, KYC evidence, verified track records, and real returns stay unavailable until vetted services and operational review exist. New fields must not fabricate facts about traders. Existing public URLs stay intact.
