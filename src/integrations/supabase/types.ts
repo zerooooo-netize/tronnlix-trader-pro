@@ -207,6 +207,36 @@ export type Database = {
           },
         ]
       }
+      marketplace_settings: {
+        Row: {
+          bookmarks_enabled: boolean
+          comparison_enabled: boolean
+          default_sort: string
+          default_view: string
+          id: number
+          page_size: number
+          updated_at: string
+        }
+        Insert: {
+          bookmarks_enabled?: boolean
+          comparison_enabled?: boolean
+          default_sort?: string
+          default_view?: string
+          id?: number
+          page_size?: number
+          updated_at?: string
+        }
+        Update: {
+          bookmarks_enabled?: boolean
+          comparison_enabled?: boolean
+          default_sort?: string
+          default_view?: string
+          id?: number
+          page_size?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
@@ -363,48 +393,214 @@ export type Database = {
         }
         Relationships: []
       }
-      traders: {
+      trader_bookmarks: {
         Row: {
-          aum: number
           created_at: string
-          deleted_at: string | null
-          featured: boolean
-          followers: number
-          handle: string
           id: string
-          name: string
-          risk_level: string
-          roi_12m: number
-          strategy: string
+          trader_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          trader_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          trader_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trader_bookmarks_trader_id_fkey"
+            columns: ["trader_id"]
+            isOneToOne: false
+            referencedRelation: "traders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trader_performance: {
+        Row: {
+          created_at: string
+          id: string
+          note: string | null
+          period_start: string
+          period_type: string
+          return_pct: number
+          trader_id: string
           updated_at: string
         }
         Insert: {
-          aum?: number
           created_at?: string
-          deleted_at?: string | null
-          featured?: boolean
-          followers?: number
-          handle: string
           id?: string
-          name: string
-          risk_level: string
-          roi_12m?: number
-          strategy: string
+          note?: string | null
+          period_start: string
+          period_type: string
+          return_pct: number
+          trader_id: string
           updated_at?: string
         }
         Update: {
-          aum?: number
           created_at?: string
+          id?: string
+          note?: string | null
+          period_start?: string
+          period_type?: string
+          return_pct?: number
+          trader_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trader_performance_trader_id_fkey"
+            columns: ["trader_id"]
+            isOneToOne: false
+            referencedRelation: "traders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      traders: {
+        Row: {
+          aum: number
+          badges: string[] | null
+          biography: string | null
+          copy_fee: number | null
+          country: string | null
+          cover_url: string | null
+          created_at: string
+          custom_label: string | null
+          deleted_at: string | null
+          document_url: string | null
+          experience_years: number | null
+          featured: boolean
+          followers: number
+          gallery_urls: string[] | null
+          handle: string
+          id: string
+          instruments: string[] | null
+          joined_at: string | null
+          languages: string[] | null
+          markets: string[] | null
+          max_drawdown: number | null
+          meta_description: string | null
+          meta_title: string | null
+          minimum_investment: number | null
+          monthly_return: number | null
+          name: string
+          photo_url: string | null
+          recommended_investment: number | null
+          risk_level: string
+          risk_score: number | null
+          roi_12m: number
+          sharpe_ratio: number | null
+          slug: string | null
+          sort_priority: number
+          status: string
+          strategy: string
+          strategy_description: string | null
+          tags: string[] | null
+          trading_style: string | null
+          updated_at: string
+          verified: boolean
+          video_url: string | null
+          win_rate: number | null
+        }
+        Insert: {
+          aum?: number
+          badges?: string[] | null
+          biography?: string | null
+          copy_fee?: number | null
+          country?: string | null
+          cover_url?: string | null
+          created_at?: string
+          custom_label?: string | null
           deleted_at?: string | null
+          document_url?: string | null
+          experience_years?: number | null
           featured?: boolean
           followers?: number
+          gallery_urls?: string[] | null
+          handle: string
+          id?: string
+          instruments?: string[] | null
+          joined_at?: string | null
+          languages?: string[] | null
+          markets?: string[] | null
+          max_drawdown?: number | null
+          meta_description?: string | null
+          meta_title?: string | null
+          minimum_investment?: number | null
+          monthly_return?: number | null
+          name: string
+          photo_url?: string | null
+          recommended_investment?: number | null
+          risk_level: string
+          risk_score?: number | null
+          roi_12m?: number
+          sharpe_ratio?: number | null
+          slug?: string | null
+          sort_priority?: number
+          status?: string
+          strategy: string
+          strategy_description?: string | null
+          tags?: string[] | null
+          trading_style?: string | null
+          updated_at?: string
+          verified?: boolean
+          video_url?: string | null
+          win_rate?: number | null
+        }
+        Update: {
+          aum?: number
+          badges?: string[] | null
+          biography?: string | null
+          copy_fee?: number | null
+          country?: string | null
+          cover_url?: string | null
+          created_at?: string
+          custom_label?: string | null
+          deleted_at?: string | null
+          document_url?: string | null
+          experience_years?: number | null
+          featured?: boolean
+          followers?: number
+          gallery_urls?: string[] | null
           handle?: string
           id?: string
+          instruments?: string[] | null
+          joined_at?: string | null
+          languages?: string[] | null
+          markets?: string[] | null
+          max_drawdown?: number | null
+          meta_description?: string | null
+          meta_title?: string | null
+          minimum_investment?: number | null
+          monthly_return?: number | null
           name?: string
+          photo_url?: string | null
+          recommended_investment?: number | null
           risk_level?: string
+          risk_score?: number | null
           roi_12m?: number
+          sharpe_ratio?: number | null
+          slug?: string | null
+          sort_priority?: number
+          status?: string
           strategy?: string
+          strategy_description?: string | null
+          tags?: string[] | null
+          trading_style?: string | null
           updated_at?: string
+          verified?: boolean
+          video_url?: string | null
+          win_rate?: number | null
         }
         Relationships: []
       }
