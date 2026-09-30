@@ -32,6 +32,7 @@ import { Route as AuthenticatedSupportRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedTradersRouteImport } from './routes/_authenticated/traders'
 import { Route as AuthenticatedWalletRouteImport } from './routes/_authenticated/wallet'
 import { Route as AuthenticatedWithdrawRouteImport } from './routes/_authenticated/withdraw'
+import { Route as CopyTradingTraderIdRouteImport } from './routes/copy-trading.$traderId'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin/audit'
 import { Route as AuthenticatedAdminCryptoRouteImport } from './routes/_authenticated/admin/crypto'
@@ -158,6 +159,11 @@ const AuthenticatedWithdrawRoute = AuthenticatedWithdrawRouteImport.update({
   path: '/withdraw',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const CopyTradingTraderIdRoute = CopyTradingTraderIdRouteImport.update({
+  id: '/$traderId',
+  path: '/$traderId',
+  getParentRoute: () => CopyTradingRoute,
+} as any)
 const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -223,7 +229,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/blog': typeof BlogRoute
   '/contact': typeof ContactRoute
-  '/copy-trading': typeof CopyTradingRoute
+  '/copy-trading': typeof CopyTradingRouteWithChildren
   '/faq': typeof FaqRoute
   '/legal': typeof LegalRoute
   '/markets': typeof MarketsRoute
@@ -239,6 +245,7 @@ export interface FileRoutesByFullPath {
   '/traders': typeof AuthenticatedTradersRoute
   '/wallet': typeof AuthenticatedWalletRoute
   '/withdraw': typeof AuthenticatedWithdrawRoute
+  '/copy-trading/$traderId': typeof CopyTradingTraderIdRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/crypto': typeof AuthenticatedAdminCryptoRoute
   '/admin/deposits': typeof AuthenticatedAdminDepositsRoute
@@ -257,7 +264,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/blog': typeof BlogRoute
   '/contact': typeof ContactRoute
-  '/copy-trading': typeof CopyTradingRoute
+  '/copy-trading': typeof CopyTradingRouteWithChildren
   '/faq': typeof FaqRoute
   '/legal': typeof LegalRoute
   '/markets': typeof MarketsRoute
@@ -272,6 +279,7 @@ export interface FileRoutesByTo {
   '/traders': typeof AuthenticatedTradersRoute
   '/wallet': typeof AuthenticatedWalletRoute
   '/withdraw': typeof AuthenticatedWithdrawRoute
+  '/copy-trading/$traderId': typeof CopyTradingTraderIdRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/crypto': typeof AuthenticatedAdminCryptoRoute
   '/admin/deposits': typeof AuthenticatedAdminDepositsRoute
@@ -292,7 +300,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/blog': typeof BlogRoute
   '/contact': typeof ContactRoute
-  '/copy-trading': typeof CopyTradingRoute
+  '/copy-trading': typeof CopyTradingRouteWithChildren
   '/faq': typeof FaqRoute
   '/legal': typeof LegalRoute
   '/markets': typeof MarketsRoute
@@ -308,6 +316,7 @@ export interface FileRoutesById {
   '/_authenticated/traders': typeof AuthenticatedTradersRoute
   '/_authenticated/wallet': typeof AuthenticatedWalletRoute
   '/_authenticated/withdraw': typeof AuthenticatedWithdrawRoute
+  '/copy-trading/$traderId': typeof CopyTradingTraderIdRoute
   '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/_authenticated/admin/crypto': typeof AuthenticatedAdminCryptoRoute
   '/_authenticated/admin/deposits': typeof AuthenticatedAdminDepositsRoute
@@ -344,6 +353,7 @@ export interface FileRouteTypes {
     | '/traders'
     | '/wallet'
     | '/withdraw'
+    | '/copy-trading/$traderId'
     | '/admin/audit'
     | '/admin/crypto'
     | '/admin/deposits'
@@ -377,6 +387,7 @@ export interface FileRouteTypes {
     | '/traders'
     | '/wallet'
     | '/withdraw'
+    | '/copy-trading/$traderId'
     | '/admin/audit'
     | '/admin/crypto'
     | '/admin/deposits'
@@ -412,6 +423,7 @@ export interface FileRouteTypes {
     | '/_authenticated/traders'
     | '/_authenticated/wallet'
     | '/_authenticated/withdraw'
+    | '/copy-trading/$traderId'
     | '/_authenticated/admin/audit'
     | '/_authenticated/admin/crypto'
     | '/_authenticated/admin/deposits'
@@ -432,7 +444,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   BlogRoute: typeof BlogRoute
   ContactRoute: typeof ContactRoute
-  CopyTradingRoute: typeof CopyTradingRoute
+  CopyTradingRoute: typeof CopyTradingRouteWithChildren
   FaqRoute: typeof FaqRoute
   LegalRoute: typeof LegalRoute
   MarketsRoute: typeof MarketsRoute
@@ -603,6 +615,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedWithdrawRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/copy-trading/$traderId': {
+      id: '/copy-trading/$traderId'
+      path: '/$traderId'
+      fullPath: '/copy-trading/$traderId'
+      preLoaderRoute: typeof CopyTradingTraderIdRouteImport
+      parentRoute: typeof CopyTradingRoute
+    }
     '/_authenticated/admin/': {
       id: '/_authenticated/admin/'
       path: '/'
@@ -737,6 +756,18 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface CopyTradingRouteChildren {
+  CopyTradingTraderIdRoute: typeof CopyTradingTraderIdRoute
+}
+
+const CopyTradingRouteChildren: CopyTradingRouteChildren = {
+  CopyTradingTraderIdRoute: CopyTradingTraderIdRoute,
+}
+
+const CopyTradingRouteWithChildren = CopyTradingRoute._addFileChildren(
+  CopyTradingRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
@@ -745,7 +776,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   BlogRoute: BlogRoute,
   ContactRoute: ContactRoute,
-  CopyTradingRoute: CopyTradingRoute,
+  CopyTradingRoute: CopyTradingRouteWithChildren,
   FaqRoute: FaqRoute,
   LegalRoute: LegalRoute,
   MarketsRoute: MarketsRoute,
