@@ -9,5 +9,6 @@
 - [ ] Complete production-readiness: verified KYC, payment confirmation, execution, real performance, role administration, CMS, settings, theme builder, mail, reports, security controls and infrastructure testing.
 - [ ] Pending external integrations: real blockchain wallet monitoring, market execution/pricing, KYC provider, email delivery, and live chat require provider configuration and compliance review.
 - [ ] Audit and redesign all public, account, and staff screens; prioritize copy trading, compact responsive layouts, accessible controls, and remove em dashes from UI copy.
-- [ ] Build a richer illustrative trader marketplace, dedicated profiles, and staff-managed trader content and performance without presenting unverified metrics as live results.
-- [ ] Guide customers from independently confirmed deposits to trader selection with an accurate confirmation view.
+- [x] Build a richer illustrative trader marketplace, dedicated profiles, and staff-managed trader content and performance without presenting unverified metrics as live results.
+- [x] Guide customers from independently confirmed deposits to trader selection with an accurate confirmation view.
+- [ ] KYC document uploads, Resend alerts, MT4/MT5 connection screen, and blockchain auto-monitoring (next phase).
