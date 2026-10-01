@@ -207,6 +207,30 @@ export type Database = {
           },
         ]
       }
+      kyc_documents: {
+        Row: {
+          created_at: string
+          doc_type: string
+          file_path: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          doc_type: string
+          file_path: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          doc_type?: string
+          file_path?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       marketplace_settings: {
         Row: {
           bookmarks_enabled: boolean
@@ -418,6 +442,65 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "trader_bookmarks_trader_id_fkey"
+            columns: ["trader_id"]
+            isOneToOne: false
+            referencedRelation: "traders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trader_connections: {
+        Row: {
+          account_login: string
+          balance: number | null
+          created_at: string
+          currency: string | null
+          equity: number | null
+          id: string
+          last_error: string | null
+          last_synced_at: string | null
+          platform: string
+          provider_account_id: string | null
+          server: string | null
+          status: string
+          trader_id: string
+          updated_at: string
+        }
+        Insert: {
+          account_login: string
+          balance?: number | null
+          created_at?: string
+          currency?: string | null
+          equity?: number | null
+          id?: string
+          last_error?: string | null
+          last_synced_at?: string | null
+          platform: string
+          provider_account_id?: string | null
+          server?: string | null
+          status?: string
+          trader_id: string
+          updated_at?: string
+        }
+        Update: {
+          account_login?: string
+          balance?: number | null
+          created_at?: string
+          currency?: string | null
+          equity?: number | null
+          id?: string
+          last_error?: string | null
+          last_synced_at?: string | null
+          platform?: string
+          provider_account_id?: string | null
+          server?: string | null
+          status?: string
+          trader_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trader_connections_trader_id_fkey"
             columns: ["trader_id"]
             isOneToOne: false
             referencedRelation: "traders"
