@@ -67,7 +67,7 @@ function Profile() {
               <h3 className="font-display text-xl">What would that look like?</h3>
               <label className="field-label mt-4">Allocation (USD)<input className="field-input" type="number" min={1} value={amount} onChange={(e) => setAmount(Number(e.target.value) || 0)} /></label>
               <p className="mt-4 text-sm">At the example average of {monthly.toFixed(2)}% a month: <strong>{money(amount * monthly / 100)}</strong> per month.</p>
-              <p className="mt-2 text-xs leading-5 text-muted-foreground">A hypothetical projection from illustrative figures. Real results can be lower, including losses.</p>
+              <p className="mt-2 text-xs leading-5 text-muted-foreground">A hypothetical projection from known figures. Real results can be lower, including losses.</p>
             </div>
           </div>
         </div></section>
