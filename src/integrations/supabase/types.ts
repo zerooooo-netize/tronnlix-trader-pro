@@ -764,6 +764,13 @@ export type Database = {
         Returns: boolean
       }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
+      list_user_roles: {
+        Args: never
+        Returns: {
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }[]
+      }
       request_withdrawal: {
         Args: { _amount: number; _destination: string; _network: string }
         Returns: string
@@ -778,6 +785,10 @@ export type Database = {
       }
       review_withdrawal: {
         Args: { _id: string; _status: string }
+        Returns: undefined
+      }
+      set_admin_role: {
+        Args: { _grant: boolean; _user_id: string }
         Returns: undefined
       }
       set_copy_status: {
