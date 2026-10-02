@@ -1,3 +1,4 @@
+import { TraderConnections } from './trader-connections';
 import { useEffect, useState, type FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { WorkspaceShell } from './workspace-shell';
@@ -39,6 +40,7 @@ export function TraderAdmin() {
           <label className="field-label mt-4">Biography<textarea className="field-input min-h-28" value={d.biography} onChange={(e) => setD({ ...d, biography: e.target.value })} /></label>
           <div className="mt-6 flex gap-3"><Button type="submit" disabled={busy}>Save profile</Button><Button type="button" variant="outline" onClick={() => setEditing(null)}>Cancel</Button></div>
         </form>
+      {editing && editing !== 'new' && <div className="mb-10"><TraderConnections traderId={editing} /></div>}
       )}
       <div className="grid border-t border-border">
         {traders.map((t) => (
