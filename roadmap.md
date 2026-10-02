@@ -11,4 +11,5 @@
 - [ ] Audit and redesign all public, account, and staff screens; prioritize copy trading, compact responsive layouts, accessible controls, and remove em dashes from UI copy.
 - [x] Build a richer illustrative trader marketplace, dedicated profiles, and staff-managed trader content and performance without presenting unverified metrics as live results.
 - [x] Guide customers from independently confirmed deposits to trader selection with an accurate confirmation view.
-- [ ] KYC document uploads, Resend alerts, MT4/MT5 connection screen, and blockchain auto-monitoring (next phase).
+- [x] KYC document uploads, MT4/MT5/Deriv connection screen, admin role management.
+- [ ] Resend alerts, and blockchain auto-monitoring (next phase).
