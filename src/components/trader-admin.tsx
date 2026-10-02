@@ -35,12 +35,12 @@ export function TraderAdmin() {
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {field('name', 'Full name')}{field('strategy', 'Strategy headline')}
             <label className="field-label">Risk level<select className="field-input" value={d.risk_level} onChange={(e) => setD({ ...d, risk_level: e.target.value })}><option>Low</option><option>Moderate</option><option>High</option></select></label>
-            {field('roi_12m', 'Example 12m return %', 'number')}{field('monthly_return', 'Avg monthly return %', 'number')}{field('win_rate', 'Win rate %', 'number')}{field('max_drawdown', 'Max drawdown %', 'number')}{field('followers', 'Followers', 'number')}{field('aum', 'AUM (USD)', 'number')}{field('minimum_investment', 'Minimum investment', 'number')}{field('recommended_investment', 'Recommended investment', 'number')}{field('copy_fee', 'Copy fee %', 'number')}{field('country', 'Country')}{field('trading_style', 'Trading style')}{field('markets', 'Markets (comma separated)')}{field('languages', 'Languages (comma separated)')}{field('photo_url', 'Photo URL', 'url')}{field('sort_priority', 'Sort priority', 'number')}
+            {field('roi_12m', '12m return %', 'number')}{field('monthly_return', 'Avg monthly return %', 'number')}{field('win_rate', 'Win rate %', 'number')}{field('max_drawdown', 'Max drawdown %', 'number')}{field('followers', 'Followers', 'number')}{field('aum', 'AUM (USD)', 'number')}{field('minimum_investment', 'Minimum investment', 'number')}{field('recommended_investment', 'Recommended investment', 'number')}{field('copy_fee', 'Copy fee %', 'number')}{field('country', 'Country')}{field('trading_style', 'Trading style')}{field('markets', 'Markets (comma separated)')}{field('languages', 'Languages (comma separated)')}{field('photo_url', 'Photo URL', 'url')}{field('sort_priority', 'Sort priority', 'number')}
           </div>
           <label className="field-label mt-4">Biography<textarea className="field-input min-h-28" value={d.biography} onChange={(e) => setD({ ...d, biography: e.target.value })} /></label>
           <div className="mt-6 flex gap-3"><Button type="submit" disabled={busy}>Save profile</Button><Button type="button" variant="outline" onClick={() => setEditing(null)}>Cancel</Button></div>
-        </form>
       {editing && editing !== 'new' && <div className="mb-10"><TraderConnections traderId={editing} /></div>}
+        </form>
       )}
       <div className="grid border-t border-border">
         {traders.map((t) => (
