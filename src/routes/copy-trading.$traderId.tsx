@@ -11,7 +11,7 @@ import type { Database } from '@/integrations/supabase/types';
 type Perf = Database['public']['Tables']['trader_performance']['Row'];
 
 export const Route = createFileRoute('/copy-trading/$traderId')({
-  head: () => ({ meta: [{ title: 'Trader profile | Tronnlix Trade' }, { name: 'description', content: 'Read a trading expert’s approach, risk profile and example performance before you copy.' }, { property: 'og:title', content: 'Trader profile | Tronnlix Trade' }, { property: 'og:description', content: 'Approach, risk profile and example performance for a Tronnlix trading expert.' }, { property: 'og:type', content: 'profile' }, { name: 'twitter:card', content: 'summary_large_image' }] }),
+  head: () => ({ meta: [{ title: 'Trader profile | Tronnlix Trade' }, { name: 'description', content: 'Read a trading expert’s approach, risk profile and performance before you copy.' }, { property: 'og:title', content: 'Trader profile | Tronnlix Trade' }, { property: 'og:description', content: 'Approach, risk profile and performance for a Tronnlix trading expert.' }, { property: 'og:type', content: 'profile' }, { name: 'twitter:card', content: 'summary_large_image' }] }),
   component: Profile,
 });
 
@@ -50,7 +50,7 @@ function Profile() {
             <span className="eyebrow">{t.risk_level.toUpperCase()} RISK · {t.strategy.toUpperCase()}</span>
             <h1 className="mt-4 flex items-center gap-3 font-display text-4xl md:text-6xl">{t.name}{t.verified && <BadgeCheck className="text-primary" size={32} aria-label="Identity verified by staff" />}</h1>
             <p className="mt-5 max-w-2xl leading-8 text-muted-foreground">{t.biography || t.strategy_description || 'Our team has not published a biography for this profile yet.'}</p>
-            <div className="mt-8 grid grid-cols-2 gap-6 border-y border-border py-6 sm:grid-cols-4"><Stat label="Example 12m" value={`+${t.roi_12m}%`} /><Stat label="Win rate" value={t.win_rate != null ? `${t.win_rate}%` : 'n/a'} /><Stat label="Max drawdown" value={t.max_drawdown != null ? `${t.max_drawdown}%` : 'n/a'} /><Stat label="Followers" value={t.followers.toLocaleString()} /></div>
+            <div className="mt-8 grid grid-cols-2 gap-6 border-y border-border py-6 sm:grid-cols-4"><Stat label="12m return" value={`+${t.roi_12m}%`} /><Stat label="Win rate" value={t.win_rate != null ? `${t.win_rate}%` : 'n/a'} /><Stat label="Max drawdown" value={t.max_drawdown != null ? `${t.max_drawdown}%` : 'n/a'} /><Stat label="Followers" value={t.followers.toLocaleString()} /></div>
             <div className="mt-8 flex flex-wrap gap-3"><Button asChild size="lg"><Link to="/traders">Copy {t.name.split(' ')[0]} <ArrowUpRight /></Link></Button><Button asChild size="lg" variant="outline"><Link to="/auth" search={{ mode: 'register' }}>Open an account</Link></Button></div>
           </div>
         </section>
@@ -66,7 +66,7 @@ function Profile() {
             <div className="mt-8 rounded-lg bg-background p-6">
               <h3 className="font-display text-xl">What would that look like?</h3>
               <label className="field-label mt-4">Allocation (USD)<input className="field-input" type="number" min={1} value={amount} onChange={(e) => setAmount(Number(e.target.value) || 0)} /></label>
-              <p className="mt-4 text-sm">At the example average of {monthly.toFixed(2)}% a month: <strong>{money(amount * monthly / 100)}</strong> per month.</p>
+              <p className="mt-4 text-sm">At the recent average of {monthly.toFixed(2)}% a month: <strong>{money(amount * monthly / 100)}</strong> per month.</p>
               <p className="mt-2 text-xs leading-5 text-muted-foreground">A  projection from known figures. Present results can be lower, including losses.</p>
             </div>
           </div>

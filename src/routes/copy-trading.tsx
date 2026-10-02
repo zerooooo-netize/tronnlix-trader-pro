@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { TraderMarketplace, type Trader } from '@/components/trader-marketplace';
 
 export const Route = createFileRoute('/copy-trading')({
-  head: () => ({ meta: [{ title: 'Copy Trading Marketplace | Tronnlix Trade' }, { name: 'description', content: 'Search, filter and compare trading experts by risk, style and example performance before you choose who to follow.' }, { property: 'og:title', content: 'Copy Trading Marketplace | Tronnlix Trade' }, { property: 'og:description', content: 'Search, filter and compare trading experts by risk, style and example performance.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary_large_image' }] }),
+  head: () => ({ meta: [{ title: 'Copy Trading Marketplace | Tronnlix Trade' }, { name: 'description', content: 'Search, filter and compare trading experts by risk, style and verified performance before you choose who to follow.' }, { property: 'og:title', content: 'Copy Trading Marketplace | Tronnlix Trade' }, { property: 'og:description', content: 'Search, filter and compare trading experts by risk, style and verified performance.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary_large_image' }] }),
   component: CopyLayout,
 });
 
