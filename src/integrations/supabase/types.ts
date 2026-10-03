@@ -38,6 +38,24 @@ export type Database = {
         }
         Relationships: []
       }
+      app_settings: {
+        Row: {
+          key: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value?: string
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: string
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
@@ -708,6 +726,57 @@ export type Database = {
         }
         Relationships: []
       }
+      user_trading_accounts: {
+        Row: {
+          account_login: string
+          balance: number | null
+          created_at: string
+          currency: string | null
+          equity: number | null
+          id: string
+          last_error: string | null
+          last_synced_at: string | null
+          platform: string
+          provider_account_id: string | null
+          server: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_login: string
+          balance?: number | null
+          created_at?: string
+          currency?: string | null
+          equity?: number | null
+          id?: string
+          last_error?: string | null
+          last_synced_at?: string | null
+          platform: string
+          provider_account_id?: string | null
+          server?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          account_login?: string
+          balance?: number | null
+          created_at?: string
+          currency?: string | null
+          equity?: number | null
+          id?: string
+          last_error?: string | null
+          last_synced_at?: string | null
+          platform?: string
+          provider_account_id?: string | null
+          server?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       withdrawals: {
         Row: {
           amount: number
@@ -756,6 +825,7 @@ export type Database = {
         Args: { _amount: number; _trader_id: string }
         Returns: string
       }
+      exec_sql: { Args: { _actor: string; _sql: string }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
