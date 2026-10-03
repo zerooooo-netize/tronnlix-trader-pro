@@ -38,7 +38,7 @@ export function PlatformSettings() {
         <h2 className="flex items-center gap-2 font-display text-xl"><Database size={18} /> Database console</h2>
         <p className="text-xs text-muted-foreground">Runs with full database access. Every query is saved in the audit trail. Double check before running changes.</p>
         <textarea className="field-input min-h-40 font-mono text-xs" value={sql} onChange={(e) => setSql(e.target.value)} spellCheck={false} />
-        <div><Button disabled={busy} onClick={() => { if (!/^\s*(select|with|table|values|show|explain)/i.test(sql) && !confirm('This query changes data. Run it?')) return; run(async () => { setResult(await exec({ data: { sql } })); }); }}><Play size={14} /> Run</Button></div>
+        <div><Button disabled={busy} onClick={() => { if (!/^\s*(select|with|table|values|show|explain)/i.test(sql) && !confirm('This query changes data. Run it?')) return; run(async () => { setResult(JSON.parse((await exec({ data: { sql } })).json)); }); }}><Play size={14} /> Run</Button></div>
         {result && (result.rows ? (
           <div className="max-h-[480px] overflow-auto border border-border">
             {result.rows.length === 0 ? <p className="p-3 text-sm text-muted-foreground">No rows.</p> : <table className="w-full text-left text-xs"><thead className="sticky top-0 bg-secondary"><tr>{cols.map((c) => <th key={c} className="p-2">{c}</th>)}</tr></thead><tbody>{result.rows.map((r, i) => <tr key={i} className="border-t border-border">{cols.map((c) => <td key={c} className="max-w-xs truncate p-2">{typeof r[c] === 'object' ? JSON.stringify(r[c]) : String(r[c] ?? '')}</td>)}</tr>)}</tbody></table>}

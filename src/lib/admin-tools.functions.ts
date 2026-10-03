@@ -63,5 +63,5 @@ export const runSql = createServerFn({ method: 'POST' })
     const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
     const { data: result, error } = await (supabaseAdmin.rpc as any)('exec_sql', { _sql: data.sql, _actor: context.userId });
     if (error) throw new Error(error.message);
-    return JSON.parse(JSON.stringify(result)) as { rows?: Record<string, unknown>[]; affected?: number };
+    return { json: JSON.stringify(result) };
   });
