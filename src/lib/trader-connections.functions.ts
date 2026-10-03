@@ -1,6 +1,7 @@
 import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
+import { getConfig } from './config.server';
 
 const META = 'https://mt-provisioning-api-v1.agiliumtrade.agiliumtrade.ai';
 const metaClient = (region = 'new-york') => `https://mt-client-api-v1.${region}.agiliumtrade.ai`;
@@ -11,7 +12,7 @@ async function requireStaff(ctx: { supabase: any; userId: string }) {
 }
 
 async function derivAuthorize(token: string) {
-  const appId = process.env['DERIV_APP_ID'] || '1089';
+  const appId = (await getConfig('deriv_app_id', 'DERIV_APP_ID')) || '1089';
   return await new Promise<{ loginid: string; balance: number; currency: string }>((resolve, reject) => {
     const ws = new WebSocket(`wss://ws.derivws.com/websockets/v3?app_id=${appId}`);
     const timer = setTimeout(() => { ws.close(); reject(new Error('Deriv did not respond in time.')); }, 10000);
@@ -44,7 +45,7 @@ export const connectTraderAccount = createServerFn({ method: 'POST' })
       if (error) throw new Error(error.message);
       return { ok: true, message: `Deriv account ${a.loginid} connected.` };
     }
-    const token = process.env['METAAPI_TOKEN'];
+    const token = await getConfig('metaapi_token', 'METAAPI_TOKEN');
     if (!token) throw new Error('MT4/MT5 connections need a MetaApi token. Ask the site owner to add it.');
     if (!data.login || !data.server) throw new Error('Enter the account number and broker server.');
     const res = await fetch(`${META}/users/current/accounts`, {
@@ -70,7 +71,7 @@ export const syncTraderConnection = createServerFn({ method: 'POST' })
     const { data: c, error } = await sb.from('trader_connections').select('*').eq('id', data.id).single();
     if (error || !c) throw new Error('Connection not found.');
     if (c.platform === 'deriv') return { ok: true, message: 'Deriv balances refresh when you reconnect with a token.' };
-    const token = process.env['METAAPI_TOKEN'];
+    const token = await getConfig('metaapi_token', 'METAAPI_TOKEN');
     if (!token || !c.provider_account_id) throw new Error('MetaApi token or account id missing.');
     const acc: any = await (await fetch(`${META}/users/current/accounts/${c.provider_account_id}`, { headers: { 'auth-token': token } })).json();
     if (acc.connectionStatus !== 'CONNECTED') {
@@ -90,7 +91,7 @@ export const removeTraderConnection = createServerFn({ method: 'POST' })
     await requireStaff(context);
     const sb = context.supabase;
     const { data: c } = await sb.from('trader_connections').select('provider_account_id').eq('id', data.id).single();
-    const token = process.env['METAAPI_TOKEN'];
+    const token = await getConfig('metaapi_token', 'METAAPI_TOKEN');
     if (token && c?.provider_account_id) await fetch(`${META}/users/current/accounts/${c.provider_account_id}`, { method: 'DELETE', headers: { 'auth-token': token } }).catch(() => null);
     const { error } = await sb.from('trader_connections').delete().eq('id', data.id);
     if (error) throw new Error(error.message);
