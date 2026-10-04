@@ -2,8 +2,17 @@ import { createServerFn } from '@tanstack/react-start';
 import { z } from 'zod';
 import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
 
-export const SETTING_KEYS = ['resend_api_key', 'email_from_address', 'email_from_name', 'metaapi_token', 'deriv_app_id', 'trongrid_api_key', 'support_email', 'site_name'] as const;
+export const SETTING_KEYS = ['resend_api_key', 'email_from_address', 'email_from_name', 'metaapi_token', 'deriv_app_id', 'trongrid_api_key', 'support_email', 'site_name', 'logo_path'] as const;
 const SECRET_KEYS = new Set(['resend_api_key', 'metaapi_token', 'trongrid_api_key']);
+
+export const getBrandSettings = createServerFn({ method: 'GET' }).handler(async () => {
+  const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
+  const { data } = await supabaseAdmin.from('app_settings').select('key,value').in('key', ['site_name', 'logo_path']);
+  const name = data?.find((item) => item.key === 'site_name')?.value?.trim() || 'Tronnlix Trade';
+  const path = data?.find((item) => item.key === 'logo_path')?.value;
+  const logo = path ? await supabaseAdmin.storage.from('site-branding').createSignedUrl(path, 3600) : null;
+  return { name, logoUrl: logo?.data?.signedUrl ?? null };
+});
 
 async function requireSuper(ctx: { supabase: any; userId: string }) {
   const { data } = await ctx.supabase.rpc('has_role', { _user_id: ctx.userId, _role: 'super_admin' });
