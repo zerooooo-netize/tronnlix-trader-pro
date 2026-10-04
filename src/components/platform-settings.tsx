@@ -1,24 +1,47 @@
 import { useEffect, useState } from 'react';
 import { useServerFn } from '@tanstack/react-start';
-import { Database, Mail, Play, Plug } from 'lucide-react';
+import { Database, Mail, Play, Plug, ImageUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getPlatformSettings, savePlatformSettings, sendTestEmail, runSql } from '@/lib/admin-tools.functions';
+import { supabase } from '@/integrations/supabase/client';
 
 const groups = [
   { title: 'Email (Resend)', icon: Mail, fields: [['resend_api_key', 'Resend API key', true], ['email_from_address', 'Sender address, e.g. no-reply@tronnlix.com', false], ['email_from_name', 'Sender name', false], ['support_email', 'Support inbox', false]] },
-  { title: 'Trading connections', icon: Plug, fields: [['metaapi_token', 'MetaApi token (MT4 / MT5)', true], ['deriv_app_id', 'Deriv app ID', false], ['trongrid_api_key', 'TronGrid API key', true], ['site_name', 'Site name', false]] },
+  { title: 'Trading connections', icon: Plug, fields: [['metaapi_token', 'MetaApi token (MT4 / MT5)', true], ['deriv_app_id', 'Deriv app ID', false], ['trongrid_api_key', 'TronGrid API key', true]] },
 ] as const;
 
 export function PlatformSettings() {
   const load = useServerFn(getPlatformSettings), save = useServerFn(savePlatformSettings), test = useServerFn(sendTestEmail), exec = useServerFn(runSql);
   const [vals, setVals] = useState<Record<string, string>>({}), [msg, setMsg] = useState(''), [err, setErr] = useState(''), [busy, setBusy] = useState(false);
   const [to, setTo] = useState(''), [sql, setSql] = useState('select id, full_name, balance from profiles limit 20'), [result, setResult] = useState<{ rows?: Record<string, unknown>[]; affected?: number } | null>(null);
+  const [logo, setLogo] = useState<File | null>(null);
   useEffect(() => { load().then((s) => setVals(Object.fromEntries(Object.entries(s).map(([k, v]) => [k, v.value])))).catch((e) => setErr(e.message)); }, []);
   async function run(fn: () => Promise<unknown>) { setBusy(true); setErr(''); setMsg(''); try { const r: any = await fn(); if (r?.message) setMsg(r.message); } catch (e) { setErr(e instanceof Error ? e.message : 'Something went wrong.'); } finally { setBusy(false); } }
   const cols = result?.rows?.[0] ? Object.keys(result.rows[0]) : [];
+  async function saveBrand() {
+    if (!vals.site_name?.trim()) { setErr('Enter a site name.'); return; }
+    await run(async () => {
+      let path = vals.logo_path ?? '';
+      if (logo) {
+        if (!['image/png','image/jpeg','image/webp','image/svg+xml'].includes(logo.type) || logo.size > 2 * 1024 * 1024) throw new Error('Choose a PNG, JPG, WEBP or SVG under 2 MB.');
+        path = `logo/${crypto.randomUUID()}.${logo.type === 'image/svg+xml' ? 'svg' : logo.type === 'image/jpeg' ? 'jpg' : logo.type.split('/')[1]}`;
+        const { error } = await supabase.storage.from('site-branding').upload(path, logo, { contentType: logo.type });
+        if (error) throw error;
+      }
+      await save({ data: { site_name: vals.site_name.trim(), logo_path: path } });
+      setVals((v) => ({ ...v, logo_path: path })); setLogo(null);
+      return { message: 'Brand updated. Refresh the site to see the new name and logo.' };
+    });
+  }
   return (
     <div className="grid gap-6">
       {err && <div role="alert" className="form-error">{err}</div>}{msg && <div className="form-notice">{msg}</div>}
+      <section className="form-panel grid gap-4">
+        <h2 className="flex items-center gap-2 font-display text-xl"><ImageUp size={18} /> Site identity</h2>
+        <label className="field-label max-w-md">Site name<input className="field-input" maxLength={80} value={vals.site_name ?? ''} onChange={(e) => setVals({ ...vals, site_name: e.target.value })} /></label>
+        <label className="field-label max-w-md">Logo image (PNG, JPG, WEBP or SVG, up to 2 MB)<input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" className="field-input" onChange={(e) => setLogo(e.target.files?.[0] ?? null)} /></label>
+        <div><Button disabled={busy} onClick={saveBrand}>Save identity</Button></div>
+      </section>
       <form className="grid gap-6 lg:grid-cols-2" onSubmit={(e) => { e.preventDefault(); run(() => save({ data: vals })); }}>
         {groups.map((g) => (
           <section key={g.title} className="form-panel grid gap-4">

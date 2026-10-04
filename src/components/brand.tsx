@@ -1,4 +1,8 @@
 import { Link } from '@tanstack/react-router';
+import { useEffect, useState } from 'react';
+import { getBrandSettings } from '@/lib/admin-tools.functions';
 export function Brand({ compact = false }: { compact?: boolean }) {
-  return <Link to="/" className="inline-flex items-center gap-3 font-display text-xl font-semibold text-foreground"><span className="brand-mark" aria-hidden="true"><span /></span>{!compact && <span>tronnlix<span className="text-primary">.</span><small className="ml-2 align-middle font-sans text-[9px] font-semibold uppercase tracking-[.2em] text-muted-foreground">Trade</small></span>}</Link>;
+  const [brand, setBrand] = useState<{name:string; logoUrl:string|null}>({name:'Tronnlix Trade',logoUrl:null});
+  useEffect(() => { getBrandSettings().then(setBrand).catch(() => {}); }, []);
+  return <Link to="/" aria-label={brand.name} className="inline-flex min-w-0 items-center gap-3 font-display text-xl font-semibold text-foreground">{brand.logoUrl ? <img src={brand.logoUrl} alt="" className="h-9 w-9 shrink-0 object-contain" /> : <span className="brand-mark shrink-0" aria-hidden="true"><span /></span>}{!compact && <span className="truncate">{brand.name}</span>}</Link>;
 }
