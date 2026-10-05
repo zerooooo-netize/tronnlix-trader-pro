@@ -19,16 +19,16 @@ export function PlatformSettings() {
   async function run(fn: () => Promise<unknown>) { setBusy(true); setErr(''); setMsg(''); try { const r: any = await fn(); if (r?.message) setMsg(r.message); } catch (e) { setErr(e instanceof Error ? e.message : 'Something went wrong.'); } finally { setBusy(false); } }
   const cols = result?.rows?.[0] ? Object.keys(result.rows[0]) : [];
   async function saveBrand() {
-    if (!vals.site_name?.trim()) { setErr('Enter a site name.'); return; }
+    if (!vals['site_name']?.trim()) { setErr('Enter a site name.'); return; }
     await run(async () => {
-      let path = vals.logo_path ?? '';
+      let path = vals['logo_path'] ?? '';
       if (logo) {
         if (!['image/png','image/jpeg','image/webp','image/svg+xml'].includes(logo.type) || logo.size > 2 * 1024 * 1024) throw new Error('Choose a PNG, JPG, WEBP or SVG under 2 MB.');
         path = `logo/${crypto.randomUUID()}.${logo.type === 'image/svg+xml' ? 'svg' : logo.type === 'image/jpeg' ? 'jpg' : logo.type.split('/')[1]}`;
         const { error } = await supabase.storage.from('site-branding').upload(path, logo, { contentType: logo.type });
         if (error) throw error;
       }
-      await save({ data: { site_name: vals.site_name.trim(), logo_path: path } });
+      await save({ data: { site_name: vals['site_name']!.trim(), logo_path: path } });
       setVals((v) => ({ ...v, logo_path: path })); setLogo(null);
       return { message: 'Brand updated. Refresh the site to see the new name and logo.' };
     });
@@ -38,7 +38,7 @@ export function PlatformSettings() {
       {err && <div role="alert" className="form-error">{err}</div>}{msg && <div className="form-notice">{msg}</div>}
       <section className="form-panel grid gap-4">
         <h2 className="flex items-center gap-2 font-display text-xl"><ImageUp size={18} /> Site identity</h2>
-        <label className="field-label max-w-md">Site name<input className="field-input" maxLength={80} value={vals.site_name ?? ''} onChange={(e) => setVals({ ...vals, site_name: e.target.value })} /></label>
+        <label className="field-label max-w-md">Site name<input className="field-input" maxLength={80} value={vals['site_name'] ?? ''} onChange={(e) => setVals({ ...vals, site_name: e.target.value })} /></label>
         <label className="field-label max-w-md">Logo image (PNG, JPG, WEBP or SVG, up to 2 MB)<input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" className="field-input" onChange={(e) => setLogo(e.target.files?.[0] ?? null)} /></label>
         <div><Button disabled={busy} onClick={saveBrand}>Save identity</Button></div>
       </section>
