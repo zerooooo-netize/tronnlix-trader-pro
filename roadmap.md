@@ -13,3 +13,4 @@
 - [x] Guide customers from independently confirmed deposits to trader selection with an accurate confirmation view.
 - [x] KYC document uploads, MT4/MT5/Deriv connection screen, admin role management.
 - [ ] Resend alerts, and blockchain auto-monitoring (next phase).
+- [x] Refresh the signed-in copy trading page with trader photography, discovery controls, comparison, profiles, and responsive allocation actions.
