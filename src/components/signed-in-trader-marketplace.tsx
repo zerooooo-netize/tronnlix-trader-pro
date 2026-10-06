@@ -65,6 +65,7 @@ export function SignedInTraderMarketplace({ traders, allocations, balance, verif
       });
   }, [query, risk, sort, style, traders]);
   const compared = traders.filter((trader) => compare.includes(trader.id));
+  const comparisonLead = compared.at(0);
   const activeIds = new Set(allocations.filter((allocation) => allocation.status === 'active').map((allocation) => allocation.trader_id));
 
   function toggleCompare(id: string) {
@@ -160,11 +161,11 @@ export function SignedInTraderMarketplace({ traders, allocations, balance, verif
         </div>
       )}
 
-      {compared.length > 0 && (
+      {comparisonLead && (
         <aside className="copy-compare" aria-label="Trader comparison">
           <div className="flex items-center justify-between gap-3"><strong>Compare {compared.length} of 3</strong><Button variant="ghost" size="icon" aria-label="Clear comparison" onClick={() => setCompare([])}><X /></Button></div>
           <div className="copy-compare-profiles">{compared.map((trader) => <div key={trader.id}><img src={portraitFor(trader)} alt="" /><span>{trader.name}</span><strong>+{trader.roi_12m}% ROI</strong></div>)}</div>
-          <Button asChild className="w-full"><Link to="/copy-trading/$traderId" params={{ traderId: compared[0].id }}>Open leading profile <ArrowUpRight /></Link></Button>
+          <Button asChild className="w-full"><Link to="/copy-trading/$traderId" params={{ traderId: comparisonLead.id }}>Open leading profile <ArrowUpRight /></Link></Button>
         </aside>
       )}
     </div>
